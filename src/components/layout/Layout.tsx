@@ -5,25 +5,20 @@ import { useAuth } from '@/hooks/useAuth'
 import clsx from 'clsx'
 
 const NAV_ITEMS = [
-  { href: '/patients',       label: 'Patients',      roles: ['admin','clinician','reviewer'] },
-  { href: '/scoring-rules',  label: 'Scoring Rules', roles: ['admin','clinician','reviewer'] },
-  { href: '/admin/export',   label: 'Export Data',   roles: ['admin'] },
-  { href: '/admin/batteries',label: 'Batteries',     roles: ['admin'] },
-  { href: '/admin/users',    label: 'Users',         roles: ['admin'] },
+  { href: '/patients',        label: 'Patients',      roles: ['admin','clinician','reviewer'] },
+  { href: '/scoring-rules',   label: 'Scoring Rules', roles: ['admin','clinician','reviewer'] },
+  { href: '/admin/export',    label: 'Export Data',   roles: ['admin'] },
+  { href: '/admin/batteries', label: 'Batteries',     roles: ['admin'] },
+  { href: '/admin/users',     label: 'Users',         roles: ['admin'] },
 ]
 
 export default function Layout({ children }: { children: ReactNode }) {
   const { profile, signOut } = useAuth()
   const router = useRouter()
 
-  const visibleNav = NAV_ITEMS.filter(item =>
-    profile && item.roles.includes(profile.role)
-  )
-
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Top nav */}
-      <header className="bg-navy-DEFAULT text-white shadow-md">
+      <header style={{ backgroundColor: '#1F4E79' }} className="text-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-8">
@@ -31,16 +26,13 @@ export default function Layout({ children }: { children: ReactNode }) {
                 MDE Platform
               </Link>
               <nav className="hidden md:flex items-center gap-1">
-                {visibleNav.map(item => (
+                {NAV_ITEMS.filter(item =>
+                  profile ? item.roles.includes(profile.role) : item.roles.includes('reviewer')
+                ).map(item => (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={clsx(
-                      'px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                      router.pathname.startsWith(item.href)
-                        ? 'bg-white/20 text-white'
-                        : 'text-blue-100 hover:bg-white/10 hover:text-white'
-                    )}
+                    className="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-white/20 transition-colors"
                   >
                     {item.label}
                   </Link>
@@ -50,7 +42,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             <div className="flex items-center gap-3">
               <span className="text-blue-200 text-sm hidden sm:block">
                 {profile?.full_name || 'User'}
-                <span className="ml-1 text-xs opacity-60 capitalize">({profile?.role})</span>
+                {profile?.role && <span className="ml-1 text-xs opacity-60 capitalize">({profile.role})</span>}
               </span>
               <button
                 onClick={() => signOut()}
@@ -63,7 +55,6 @@ export default function Layout({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      {/* Page content */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
