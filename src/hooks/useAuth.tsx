@@ -24,30 +24,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
-      if (session?.user) loadProfile(session.user.id)
-      else setLoading(false)
+      if (session?.user) {
+        loadProfile(session.user.id).finally(() => setLoading(false))
+      } else {
+        setLoading(false)
+      }
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session)
         setUser(session?.user ?? null)
-        if (session?.user) await loadProfile(session.user.id)
-        else { setProfile(null); setLoading(false) }
+        if (session?.user) {
+          await loadProfile(session.user.id)
+        } else {
+          setProfile(null)
+        }
+        setLoading(false)
       }
     )
     return () => subscription.unsubscribe()
   }, [])
 
   async function loadProfile(userId: string) {
-    setLoading(true)
-    const { data } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
-    setProfile(data ?? null)
-    setLoading(false)
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle()
+      if (!error && data) setProfile(data as UserProfile)
+    } catch (e) {
+      console.error('Profile load error:', e)
+    }
   }
 
   async function signIn(email: string, password: string) {
