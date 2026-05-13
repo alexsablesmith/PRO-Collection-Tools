@@ -21,26 +21,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Get session first — this is fast
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
-      if (session?.user) {
-        loadProfile(session.user.id).finally(() => setLoading(false))
-      } else {
-        setLoading(false)
-      }
+      setLoading(false) // Stop loading as soon as we know if user is logged in
+      if (session?.user) loadProfile(session.user.id) // Load profile in background
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (_event, session) => {
         setSession(session)
         setUser(session?.user ?? null)
-        if (session?.user) {
-          await loadProfile(session.user.id)
-        } else {
-          setProfile(null)
-        }
         setLoading(false)
+        if (session?.user) loadProfile(session.user.id)
+        else setProfile(null)
       }
     )
     return () => subscription.unsubscribe()
@@ -48,12 +43,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function loadProfile(userId: string) {
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', userId)
         .maybeSingle()
-      if (!error && data) setProfile(data as UserProfile)
+      if (data) setProfile(data as UserProfile)
     } catch (e) {
       console.error('Profile load error:', e)
     }
