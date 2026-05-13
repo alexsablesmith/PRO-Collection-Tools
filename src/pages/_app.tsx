@@ -5,7 +5,6 @@ import Layout from '@/components/layout/Layout'
 import '@/styles/globals.css'
 import { useEffect } from 'react'
 
-// Pages that don't need the main layout (public routes)
 const PUBLIC_ROUTES = ['/login', '/survey/[token]']
 
 function AppContent({ Component, pageProps }: AppProps) {
@@ -19,11 +18,12 @@ function AppContent({ Component, pageProps }: AppProps) {
     }
   }, [user, loading, isPublic, router])
 
+  // Don't get stuck — if loading takes more than 3 seconds, proceed anyway
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="w-10 h-10 border-4 border-blue-200 border-t-navy-DEFAULT rounded-full animate-spin mx-auto mb-3" />
+          <div className="w-10 h-10 border-4 border-blue-200 border-t-[#1F4E79] rounded-full animate-spin mx-auto mb-3" />
           <p className="text-gray-500 text-sm">Loading...</p>
         </div>
       </div>
@@ -31,7 +31,6 @@ function AppContent({ Component, pageProps }: AppProps) {
   }
 
   if (isPublic) return <Component {...pageProps} />
-
   if (!user) return null
 
   return (
