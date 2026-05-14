@@ -25,6 +25,19 @@ export default function PatientDetailPage() {
   const [activeTab, setActiveTab] = useState<'history'|'charts'>('history')
 
   const canSend = profile?.role === 'admin' || profile?.role === 'clinician'
+  const canDelete = profile?.role === 'admin'
+
+  async function deletePatient() {
+    if (!confirm('Are you sure you want to delete this patient and all their survey data? This cannot be undone.')) return
+    // Delete in order: responses, requests, patient
+    const { data: requests } = await supabase.from('survey_requests').select('id').eq('patient_id', id)
+    if (requests && requests.length > 0) {
+      await supabase.from('survey_responses').delete().in('survey_request_id', requests.map(r => r.id))
+    }
+    await supabase.from('survey_requests').delete().eq('patient_id', id)
+    await supabase.from('patients').delete().eq('id', id)
+    router.push('/patients')
+  }
 
   useEffect(() => {
     if (id) loadData()
@@ -81,16 +94,12 @@ export default function PatientDetailPage() {
   ]
   const OTHER_KEYS = ['phq9','gad7','tsk11','pcs']
 
-function severityColor(label: string | null) {
+  function severityColor(label: string | null) {
     if (!label) return 'text-gray-500'
-    if (label.toLowerCase().includes('below clinical')) return 'badge-wnl'
-    if (label.toLowerCase().includes('within normal')) return 'badge-wnl'
-    if (label.toLowerCase().includes('none') || label.toLowerCase().includes('minimal')) return 'badge-wnl'
-    if (label.toLowerCase().includes('elevated') || label.toLowerCase().includes('clinically significant')) return 'badge-sev'
+    if (label.toLowerCase().includes('normal') || label.toLowerCase().includes('minimal') || label.toLowerCase().includes('none')) return 'badge-wnl'
     if (label.toLowerCase().includes('mild')) return 'badge-mild'
     if (label.toLowerCase().includes('moderate')) return 'badge-mod'
-    if (label.toLowerCase().includes('severe')) return 'badge-sev'
-    return 'text-gray-500'
+    return 'badge-sev'
   }
 
   if (loading) return <div className="p-12 text-center text-gray-400">Loading patient...</div>
@@ -126,18 +135,23 @@ function severityColor(label: string | null) {
                 </div>
               </div>
             </div>
-            {canSend && (
-              <div className="flex gap-2">
+            <div className="flex gap-2">
+              {canSend && (
                 <Link href={`/patients/${id}/survey`} className="btn-primary text-sm">
                   Send Survey
                 </Link>
-                {visits.length > 0 && (
-                  <Link href={`/patients/${id}/report`} className="btn-secondary text-sm">
-                    Generate Report
-                  </Link>
-                )}
-              </div>
-            )}
+              )}
+              {canSend && visits.length > 0 && (
+                <Link href={`/patients/${id}/report`} className="btn-secondary text-sm">
+                  Generate Report
+                </Link>
+              )}
+              {canDelete && (
+                <button onClick={deletePatient} className="btn-danger text-sm">
+                  Delete Patient
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
