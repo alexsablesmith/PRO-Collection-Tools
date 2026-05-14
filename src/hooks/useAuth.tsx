@@ -21,24 +21,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Get session first — this is fast
+    // Force loading to end after 3 seconds no matter what
+    const forceEnd = setTimeout(() => setLoading(false), 3000)
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
-      setLoading(false) // Stop loading as soon as we know if user is logged in
-      if (session?.user) loadProfile(session.user.id) // Load profile in background
+      clearTimeout(forceEnd)
+      setLoading(false)
+      if (session?.user) loadProfile(session.user.id)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session)
         setUser(session?.user ?? null)
+        clearTimeout(forceEnd)
         setLoading(false)
         if (session?.user) loadProfile(session.user.id)
         else setProfile(null)
       }
     )
-    return () => subscription.unsubscribe()
+    return () => {
+      clearTimeout(forceEnd)
+      subscription.unsubscribe()
+    }
   }, [])
 
   async function loadProfile(userId: string) {
