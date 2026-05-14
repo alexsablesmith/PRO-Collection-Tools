@@ -704,7 +704,7 @@ export default function SurveyPage() {
                 <h2 className="text-lg font-semibold text-gray-900 mb-1">{questions.title}</h2>
                 {questions.timeframe && <p className="text-sm text-gray-500 mb-5 italic">{questions.timeframe}</p>}
 
-                {/* NRS special UI */}
+              {/* NRS special UI */}
                 {key === 'pain_nrs' ? (
                   <div className="card">
                     <p className="text-gray-700 mb-4">{questions.items[0].text}</p>
@@ -713,7 +713,7 @@ export default function SurveyPage() {
                         <button
                           key={opt.value}
                           onClick={() => setItemResponse(key, 'nrs', opt.value)}
-                          className={`py-3 rounded-lg text-sm font-bold transition-colors ${instResp['nrs'] === opt.value ? 'bg-navy-DEFAULT text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+                          className={`py-3 rounded-lg text-sm font-bold transition-colors ${instResp['nrs'] === opt.value ? 'bg-[#1F4E79] text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
                         >
                           {opt.value}
                         </button>
@@ -724,6 +724,47 @@ export default function SurveyPage() {
                       <span>{lang === 'es' ? 'Peor dolor imaginable' : 'Worst pain imaginable'}</span>
                     </div>
                   </div>
+                ) : ['phq9','gad7','tsk11','pcs'].includes(key) ? (
+                  <div className="card overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr>
+                          <th className="text-left py-2 pr-4 font-medium text-gray-600 w-1/2"></th>
+                          {questions.options.map(opt => (
+                            <th key={opt.value} className="text-center py-2 px-2 font-medium text-gray-600 text-xs">
+                              {opt.label}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {questions.items.map((item, qi) => (
+                          <tr key={item.id} className={qi % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                            <td className="py-3 pr-4 text-gray-800 text-sm">
+                              <span className="font-medium text-gray-400 mr-2">{qi + 1}.</span>
+                              {item.text}
+                            </td>
+                            {questions.options.map(opt => (
+                              <td key={opt.value} className="text-center py-3 px-2">
+                                <button
+                                  onClick={() => setItemResponse(key, item.id, opt.value)}
+                                  className={`w-7 h-7 rounded-full border-2 flex items-center justify-center mx-auto transition-colors ${
+                                    instResp[item.id] === opt.value
+                                      ? 'bg-[#1F4E79] border-[#1F4E79]'
+                                      : 'border-gray-300 hover:border-[#2E75B6]'
+                                  }`}
+                                >
+                                  {instResp[item.id] === opt.value && (
+                                    <div className="w-3 h-3 rounded-full bg-white" />
+                                  )}
+                                </button>
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 ) : (
                   <div className="space-y-4">
                     {questions.items.map((item, qi) => (
@@ -731,7 +772,7 @@ export default function SurveyPage() {
                         <p className="text-sm text-gray-800 mb-3 font-medium">{qi + 1}. {item.text}</p>
                         <div className="space-y-1.5">
                           {questions.options.map(opt => (
-                            <label key={opt.value} className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors ${instResp[item.id] === opt.value ? 'bg-ltblue border border-blue-300' : 'hover:bg-gray-50 border border-transparent'}`}>
+                            <label key={opt.value} className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors ${instResp[item.id] === opt.value ? 'bg-[#EBF3FB] border border-blue-300' : 'hover:bg-gray-50 border border-transparent'}`}>
                               <input
                                 type="radio"
                                 name={`${key}_${item.id}`}
@@ -739,8 +780,8 @@ export default function SurveyPage() {
                                 onChange={() => setItemResponse(key, item.id, opt.value)}
                                 className="sr-only"
                               />
-                              <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${instResp[item.id] === opt.value ? 'border-navy-DEFAULT' : 'border-gray-300'}`}>
-                                {instResp[item.id] === opt.value && <div className="w-2 h-2 rounded-full bg-navy-DEFAULT" />}
+                              <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${instResp[item.id] === opt.value ? 'border-[#1F4E79]' : 'border-gray-300'}`}>
+                                {instResp[item.id] === opt.value && <div className="w-2 h-2 rounded-full bg-[#1F4E79]" />}
                               </div>
                               <span className="text-sm text-gray-700">{opt.label}</span>
                             </label>
@@ -750,9 +791,6 @@ export default function SurveyPage() {
                     ))}
                   </div>
                 )}
-              </div>
-            )
-          })()}
 
           {/* Navigation */}
           <div className="flex justify-between mt-6">
