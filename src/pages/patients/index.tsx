@@ -14,7 +14,9 @@ export default function PatientsPage() {
   const [search,   setSearch]   = useState('')
   const [loading,  setLoading]  = useState(true)
 
-  useEffect(() => { loadPatients() }, [])
+  useEffect(() => { 
+    if (profile?.organization_id) loadPatients() 
+  }, [profile])
 
 async function loadPatients() {
     setLoading(true)
