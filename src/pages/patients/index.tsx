@@ -121,10 +121,10 @@ async function loadPatients() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-gray-600 hidden sm:table-cell">
-                      {p.date_of_birth ? format(parseISO(p.date_of_birth), 'MMM d, yyyy') : '—'}
+                      {p.date_of_birth ? (() => { try { return format(parseISO(p.date_of_birth), 'MMM d, yyyy') } catch { return p.date_of_birth } })() : '—'}
                     </td>
                     <td className="px-4 py-3 text-gray-600 hidden md:table-cell">
-                      {p.last_survey_date ? format(parseISO(p.last_survey_date), 'MMM d, yyyy') : '—'}
+                      {p.last_survey_date ? (() => { try { return format(parseISO(p.last_survey_date), 'MMM d, yyyy') } catch { return '—' } })() : '—'}
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
                       <span className="text-gray-600">{p.completed_surveys ?? 0}</span>
