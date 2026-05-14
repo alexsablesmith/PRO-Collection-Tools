@@ -764,7 +764,7 @@ export default function SurveyPage() {
 
             {step < totalSteps - 1 ? (
               <button
-                onClick={() => setStep(s => s + 1)}
+                onClick={() => { setStep(s => s + 1); window.scrollTo(0, 0); }}
                 disabled={!isCurrentComplete()}
                 className="btn-primary"
               >
