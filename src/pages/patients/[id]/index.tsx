@@ -81,12 +81,16 @@ export default function PatientDetailPage() {
   ]
   const OTHER_KEYS = ['phq9','gad7','tsk11','pcs']
 
-  function severityColor(label: string | null) {
+function severityColor(label: string | null) {
     if (!label) return 'text-gray-500'
-    if (label.toLowerCase().includes('normal') || label.toLowerCase().includes('minimal') || label.toLowerCase().includes('none')) return 'badge-wnl'
+    if (label.toLowerCase().includes('below clinical')) return 'badge-wnl'
+    if (label.toLowerCase().includes('within normal')) return 'badge-wnl'
+    if (label.toLowerCase().includes('none') || label.toLowerCase().includes('minimal')) return 'badge-wnl'
+    if (label.toLowerCase().includes('elevated') || label.toLowerCase().includes('clinically significant')) return 'badge-sev'
     if (label.toLowerCase().includes('mild')) return 'badge-mild'
     if (label.toLowerCase().includes('moderate')) return 'badge-mod'
-    return 'badge-sev'
+    if (label.toLowerCase().includes('severe')) return 'badge-sev'
+    return 'text-gray-500'
   }
 
   if (loading) return <div className="p-12 text-center text-gray-400">Loading patient...</div>
