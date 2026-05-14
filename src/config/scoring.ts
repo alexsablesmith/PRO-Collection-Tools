@@ -234,12 +234,12 @@ export function scoreGAD7(responses: Record<string, number>): ScoreResult {
 }
 
 export function scoreTSK11(responses: Record<string, number>): ScoreResult {
-  // Items 4 and 8 (1-based) are reverse scored
-  // Keys are item IDs: tsk_1 through tsk_11
-  const REVERSE_ITEMS = ['tsk_4', 'tsk_8']
+  // TSK-11 (Woby et al. 2005) - no reverse scoring in this 11-item version
+  // All items scored 1=Strongly Disagree to 4=Strongly Agree
+  // Range: 11-44
   let total = 0
   for (const [key, val] of Object.entries(responses)) {
-    total += REVERSE_ITEMS.includes(key) ? (5 - val) : val
+    total += val
   }
   const elevated = total >= 37
   return {
