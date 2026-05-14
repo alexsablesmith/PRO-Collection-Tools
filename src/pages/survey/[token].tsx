@@ -269,7 +269,186 @@ const SURVEY_QUESTIONS: Record<string, {
       ],
     },
   },
-  pain_nrs: {
+  promis_depression_4a_v1: {
+    en: {
+      title: 'Depression',
+      timeframe: 'In the past 7 days...',
+      items: [
+        { id: 'dep1', text: 'I felt worthless.' },
+        { id: 'dep2', text: 'I felt that I had nothing to look forward to.' },
+        { id: 'dep3', text: 'I felt helpless.' },
+        { id: 'dep4', text: 'I felt sad.' },
+      ],
+      options: [
+        { value: 1, label: 'Never' },
+        { value: 2, label: 'Rarely' },
+        { value: 3, label: 'Sometimes' },
+        { value: 4, label: 'Often' },
+        { value: 5, label: 'Always' },
+      ],
+    },
+    es: {
+      title: 'Depresión',
+      timeframe: 'En los últimos 7 días...',
+      items: [
+        { id: 'dep1', text: 'Me sentí sin valor.' },
+        { id: 'dep2', text: 'Sentí que no tenía nada que esperar con ansias.' },
+        { id: 'dep3', text: 'Me sentí indefenso/a.' },
+        { id: 'dep4', text: 'Me sentí triste.' },
+      ],
+      options: [
+        { value: 1, label: 'Nunca' },
+        { value: 2, label: 'Raramente' },
+        { value: 3, label: 'A veces' },
+        { value: 4, label: 'A menudo' },
+        { value: 5, label: 'Siempre' },
+      ],
+    },
+  },
+  promis_fatigue_4a_v1: {
+    en: {
+      title: 'Fatigue',
+      timeframe: 'In the past 7 days...',
+      items: [
+        { id: 'fat1', text: 'I feel fatigued.' },
+        { id: 'fat2', text: 'I have trouble starting things because I am tired.' },
+        { id: 'fat3', text: 'How run-down did you feel on average?' },
+        { id: 'fat4', text: 'How fatigued were you on average?' },
+      ],
+      options: [
+        { value: 1, label: 'Never' },
+        { value: 2, label: 'Rarely' },
+        { value: 3, label: 'Sometimes' },
+        { value: 4, label: 'Often' },
+        { value: 5, label: 'Always' },
+      ],
+    },
+    es: {
+      title: 'Fatiga',
+      timeframe: 'En los últimos 7 días...',
+      items: [
+        { id: 'fat1', text: 'Me siento fatigado/a.' },
+        { id: 'fat2', text: 'Tengo problemas para empezar cosas porque estoy cansado/a.' },
+        { id: 'fat3', text: '¿Qué tan agotado/a se sintió en promedio?' },
+        { id: 'fat4', text: '¿Qué tan fatigado/a estuvo en promedio?' },
+      ],
+      options: [
+        { value: 1, label: 'Nunca' },
+        { value: 2, label: 'Raramente' },
+        { value: 3, label: 'A veces' },
+        { value: 4, label: 'A menudo' },
+        { value: 5, label: 'Siempre' },
+      ],
+    },
+  },
+  promis_sleep_4a_v1: {
+    en: {
+      title: 'Sleep Disturbance',
+      timeframe: 'In the past 7 days...',
+      items: [
+        { id: 'slp1', text: 'My sleep quality was...' },
+        { id: 'slp2', text: 'My sleep was refreshing.' },
+        { id: 'slp3', text: 'I had difficulty falling asleep.' },
+        { id: 'slp4', text: 'I had difficulty staying asleep.' },
+      ],
+      options: [
+        { value: 1, label: 'Very poor' },
+        { value: 2, label: 'Poor' },
+        { value: 3, label: 'Fair' },
+        { value: 4, label: 'Good' },
+        { value: 5, label: 'Very good' },
+      ],
+    },
+    es: {
+      title: 'Trastorno del Sueño',
+      timeframe: 'En los últimos 7 días...',
+      items: [
+        { id: 'slp1', text: 'La calidad de mi sueño fue...' },
+        { id: 'slp2', text: 'Mi sueño fue reparador.' },
+        { id: 'slp3', text: 'Tuve dificultad para quedarme dormido/a.' },
+        { id: 'slp4', text: 'Tuve dificultad para mantenerme dormido/a.' },
+      ],
+      options: [
+        { value: 1, label: 'Muy mala' },
+        { value: 2, label: 'Mala' },
+        { value: 3, label: 'Regular' },
+        { value: 4, label: 'Buena' },
+        { value: 5, label: 'Muy buena' },
+      ],
+    },
+  },
+  promis_social_4a_v1: {
+    en: {
+      title: 'Ability to Participate in Social Roles and Activities',
+      timeframe: 'In the past 7 days...',
+      items: [
+        { id: 'soc1', text: 'I have trouble doing all of my regular leisure activities with others.' },
+        { id: 'soc2', text: 'I have trouble doing all of the family activities that I want to do.' },
+        { id: 'soc3', text: 'I have trouble doing all of my usual work.' },
+        { id: 'soc4', text: 'I have trouble doing all of my regular social activities with groups of people.' },
+      ],
+      options: [
+        { value: 5, label: 'Never' },
+        { value: 4, label: 'Rarely' },
+        { value: 3, label: 'Sometimes' },
+        { value: 2, label: 'Usually' },
+        { value: 1, label: 'Always' },
+      ],
+    },
+    es: {
+      title: 'Capacidad para Participar en Roles Sociales y Actividades',
+      timeframe: 'En los últimos 7 días...',
+      items: [
+        { id: 'soc1', text: 'Tengo problemas para hacer todas mis actividades recreativas habituales con otros.' },
+        { id: 'soc2', text: 'Tengo problemas para hacer todas las actividades familiares que quiero hacer.' },
+        { id: 'soc3', text: 'Tengo problemas para hacer todo mi trabajo habitual.' },
+        { id: 'soc4', text: 'Tengo problemas para hacer todas mis actividades sociales habituales en grupo.' },
+      ],
+      options: [
+        { value: 5, label: 'Nunca' },
+        { value: 4, label: 'Raramente' },
+        { value: 3, label: 'A veces' },
+        { value: 2, label: 'Generalmente' },
+        { value: 1, label: 'Siempre' },
+      ],
+    },
+  },
+  promis_pain_interference_4a_v1: {
+    en: {
+      title: 'Pain Interference',
+      timeframe: 'In the past 7 days, how much did pain interfere with your...',
+      items: [
+        { id: 'pi1', text: 'Day to day activities' },
+        { id: 'pi2', text: 'Work around the home' },
+        { id: 'pi3', text: 'Ability to participate in social activities' },
+        { id: 'pi4', text: 'Enjoyment of life' },
+      ],
+      options: [
+        { value: 1, label: 'Not at all' },
+        { value: 2, label: 'A little bit' },
+        { value: 3, label: 'Somewhat' },
+        { value: 4, label: 'Quite a bit' },
+        { value: 5, label: 'Very much' },
+      ],
+    },
+    es: {
+      title: 'Interferencia del Dolor',
+      timeframe: 'En los últimos 7 días, ¿cuánto interfirió el dolor con su...',
+      items: [
+        { id: 'pi1', text: 'Actividades del día a día' },
+        { id: 'pi2', text: 'Trabajo en el hogar' },
+        { id: 'pi3', text: 'Capacidad para participar en actividades sociales' },
+        { id: 'pi4', text: 'Disfrute de la vida' },
+      ],
+      options: [
+        { value: 1, label: 'Para nada' },
+        { value: 2, label: 'Un poco' },
+        { value: 3, label: 'Algo' },
+        { value: 4, label: 'Bastante' },
+        { value: 5, label: 'Muchísimo' },
+      ],
+    },
+  },pain_nrs: {
     en: {
       title: 'Pain Intensity',
       items: [{ id: 'nrs', text: 'On average, how would you rate your pain over the past 7 days?' }],
