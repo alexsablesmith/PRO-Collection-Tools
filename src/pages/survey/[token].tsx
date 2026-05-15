@@ -126,11 +126,11 @@ const SURVEY_QUESTIONS: Record<string, {
         { id: 'fat4', text: 'How fatigued were you on average?' },
       ],
       options: [
-        { value: 1, label: 'Never' },
-        { value: 2, label: 'Rarely' },
-        { value: 3, label: 'Sometimes' },
-        { value: 4, label: 'Often' },
-        { value: 5, label: 'Always' },
+        { value: 1, label: 'Not at all' },
+        { value: 2, label: 'A little bit' },
+        { value: 3, label: 'Somewhat' },
+        { value: 4, label: 'Quite a bit' },
+        { value: 5, label: 'Very much' },
       ],
     },
     es: {
@@ -143,11 +143,11 @@ const SURVEY_QUESTIONS: Record<string, {
         { id: 'fat4', text: '¿Qué tan fatigado/a estuvo en promedio?' },
       ],
       options: [
-        { value: 1, label: 'Nunca' },
-        { value: 2, label: 'Raramente' },
-        { value: 3, label: 'A veces' },
-        { value: 4, label: 'A menudo' },
-        { value: 5, label: 'Siempre' },
+        { value: 1, label: 'Para nada' },
+        { value: 2, label: 'Un poco' },
+        { value: 3, label: 'Algo' },
+        { value: 4, label: 'Bastante' },
+        { value: 5, label: 'Muchísimo' },
       ],
     },
   },
@@ -156,34 +156,82 @@ const SURVEY_QUESTIONS: Record<string, {
       title: 'Sleep Disturbance',
       timeframe: 'In the past 7 days...',
       items: [
-        { id: 'slp1', text: 'My sleep quality was...' },
-        { id: 'slp2', text: 'My sleep was refreshing.' },
-        { id: 'slp3', text: 'I had a problem with my sleep.' },
-        { id: 'slp4', text: 'I had difficulty falling asleep.' },
+        { id: 'slp1', text: 'My sleep quality was...', options: [
+          { value: 5, label: 'Very poor' },
+          { value: 4, label: 'Poor' },
+          { value: 3, label: 'Fair' },
+          { value: 2, label: 'Good' },
+          { value: 1, label: 'Very good' },
+        ]},
+        { id: 'slp2', text: 'My sleep was refreshing.', options: [
+          { value: 5, label: 'Not at all' },
+          { value: 4, label: 'A little bit' },
+          { value: 3, label: 'Somewhat' },
+          { value: 2, label: 'Quite a bit' },
+          { value: 1, label: 'Very much' },
+        ]},
+        { id: 'slp3', text: 'I had a problem with my sleep.', options: [
+          { value: 1, label: 'Not at all' },
+          { value: 2, label: 'A little bit' },
+          { value: 3, label: 'Somewhat' },
+          { value: 4, label: 'Quite a bit' },
+          { value: 5, label: 'Very much' },
+        ]},
+        { id: 'slp4', text: 'I had difficulty falling asleep.', options: [
+          { value: 1, label: 'Not at all' },
+          { value: 2, label: 'A little bit' },
+          { value: 3, label: 'Somewhat' },
+          { value: 4, label: 'Quite a bit' },
+          { value: 5, label: 'Very much' },
+        ]},
       ],
       options: [
-        { value: 1, label: 'Very poor' },
-        { value: 2, label: 'Poor' },
-        { value: 3, label: 'Fair' },
-        { value: 4, label: 'Good' },
-        { value: 5, label: 'Very good' },
+        { value: 1, label: 'Not at all' },
+        { value: 2, label: 'A little bit' },
+        { value: 3, label: 'Somewhat' },
+        { value: 4, label: 'Quite a bit' },
+        { value: 5, label: 'Very much' },
       ],
     },
     es: {
       title: 'Trastorno del Sueño',
       timeframe: 'En los últimos 7 días...',
       items: [
-        { id: 'slp1', text: 'La calidad de mi sueño fue...' },
-        { id: 'slp2', text: 'Mi sueño fue reparador.' },
-        { id: 'slp3', text: 'Tuve un problema con mi sueño.' },
-        { id: 'slp4', text: 'Tuve dificultad para quedarme dormido/a.' },
+        { id: 'slp1', text: 'La calidad de mi sueño fue...', options: [
+          { value: 5, label: 'Muy mala' },
+          { value: 4, label: 'Mala' },
+          { value: 3, label: 'Regular' },
+          { value: 2, label: 'Buena' },
+          { value: 1, label: 'Muy buena' },
+        ]},
+        { id: 'slp2', text: 'Mi sueño fue reparador.', options: [
+          { value: 5, label: 'Para nada' },
+          { value: 4, label: 'Un poco' },
+          { value: 3, label: 'Algo' },
+          { value: 2, label: 'Bastante' },
+          { value: 1, label: 'Muchísimo' },
+        ]},
+        { id: 'slp3', text: 'Tuve un problema con mi sueño.', options: [
+          { value: 1, label: 'Para nada' },
+          { value: 2, label: 'Un poco' },
+          { value: 3, label: 'Algo' },
+          { value: 4, label: 'Bastante' },
+          { value: 5, label: 'Muchísimo' },
+        ]},
+        { id: 'slp4', text: 'Tuve dificultad para quedarme dormido/a.', options: [
+          { value: 1, label: 'Para nada' },
+          { value: 2, label: 'Un poco' },
+          { value: 3, label: 'Algo' },
+          { value: 4, label: 'Bastante' },
+          { value: 5, label: 'Muchísimo' },
+        ]},
       ],
       options: [
-        { value: 1, label: 'Muy mala' },
-        { value: 2, label: 'Mala' },
-        { value: 3, label: 'Regular' },
-        { value: 4, label: 'Buena' },
-        { value: 5, label: 'Muy buena' },
+        { value: 1, label: 'Para nada' },
+        { value: 2, label: 'Un poco' },
+        { value: 3, label: 'Algo' },
+        { value: 4, label: 'Bastante' },
+        { value: 5, label: 'Muchísimo' },
       ],
     },
   },
@@ -736,7 +784,7 @@ export default function SurveyPage() {
                       <div key={item.id} className={`card border ${instResp[item.id] !== undefined ? 'border-blue-200' : 'border-gray-100'}`}>
                         <p className="text-sm text-gray-800 mb-3 font-medium">{qi + 1}. {item.text}</p>
                         <div className="space-y-1.5">
-                          {questions.options.map(opt => (
+                          {((item as any).options || questions.options).map((opt: any) => (
                             <label key={opt.value} className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors ${instResp[item.id] === opt.value ? 'bg-[#EBF3FB] border border-blue-300' : 'hover:bg-gray-50 border border-transparent'}`}>
                               <input
                                 type="radio"
