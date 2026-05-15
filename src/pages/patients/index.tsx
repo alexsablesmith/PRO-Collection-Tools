@@ -22,7 +22,7 @@ async function loadPatients() {
     setLoading(true)
     const { data, error } = await supabase
       .from('patients')
-      .select('*, survey_requests(completed_at)')
+      .select('*, survey_requests(completed_at, status)')
       .eq('organization_id', profile?.organization_id)
       .eq('is_active', true)
       .order('last_name', { ascending: true })
@@ -31,7 +31,7 @@ async function loadPatients() {
       last_survey_date: p.survey_requests?.length > 0
         ? p.survey_requests.sort((a: any, b: any) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime())[0].completed_at
         : null,
-      completed_surveys: p.survey_requests?.filter((r: any) => r.completed_at).length ?? 0
+      completed_surveys: p.survey_requests?.filter((r: any) => r.status === 'completed').length ?? 0
     })) as PatientWithHistory[])
     setLoading(false)
   }
