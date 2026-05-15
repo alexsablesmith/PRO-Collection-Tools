@@ -27,14 +27,14 @@ export default function PatientDetailPage() {
   const canSend = profile?.role === 'admin' || profile?.role === 'clinician'
   const canDelete = profile?.role === 'admin'
 
-  async function deletePatient() {
+async function deletePatient() {
     if (!confirm('Are you sure you want to delete this patient and all their survey data? This cannot be undone.')) return
-    // Delete in order: responses, requests, patient
     const { data: requests } = await supabase.from('survey_requests').select('id').eq('patient_id', id)
     if (requests && requests.length > 0) {
       await supabase.from('survey_responses').delete().in('survey_request_id', requests.map(r => r.id))
     }
     await supabase.from('survey_requests').delete().eq('patient_id', id)
+    await supabase.from('report_audit_log').delete().eq('patient_id', id)
     await supabase.from('patients').delete().eq('id', id)
     router.push('/patients')
   }
