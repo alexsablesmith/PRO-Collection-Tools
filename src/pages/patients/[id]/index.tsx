@@ -94,6 +94,17 @@ async function deletePatient() {
   ]
   const OTHER_KEYS = ['phq9','gad7','tsk11','pcs']
 
+  const promisChartData = visits.map(v => {
+    const point: Record<string, any> = {
+      date: v.request.completed_at ? format(parseISO(v.request.completed_at), 'MM/dd/yy') : '',
+    }
+    PROMIS_KEYS.forEach(key => {
+      const resp = v.responses.find(r => r.instrument?.scoring_config_key === key)
+      point[key] = resp?.t_score ?? null
+    })
+    return point
+  })
+
   function severityColor(label: string | null) {
     if (!label) return 'text-gray-500'
     if (label.toLowerCase().includes('normal') || label.toLowerCase().includes('minimal') || label.toLowerCase().includes('none')) return 'badge-wnl'
@@ -238,29 +249,27 @@ async function deletePatient() {
                   <h3 className="font-semibold text-gray-800 mb-1">PROMIS T-Scores Over Time</h3>
                   <p className="text-xs text-gray-400 mb-4">Population mean = 50. For symptom scales, higher is worse. For Physical Function and Social Roles, higher is better.</p>
                   <ResponsiveContainer width="100%" height={320}>
-                    <LineChart margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                    <LineChart data={promisChartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                      <XAxis dataKey="date" type="category" allowDuplicatedCategory={false} tick={{ fontSize: 11 }} />
+                      <XAxis dataKey="date" tick={{ fontSize: 11 }} />
                       <YAxis domain={[20, 80]} tick={{ fontSize: 11 }} />
                       <Tooltip />
                       <Legend />
                       <ReferenceLine y={50} stroke="#aaa" strokeDasharray="4 2" label={{ value: 'Mean=50', fontSize: 10, fill: '#aaa' }} />
                       {PROMIS_KEYS.map((key, i) => {
-                        const data   = buildChartData(key)
                         const meta   = INSTRUMENT_META[key]
                         const colors = ['#1F4E79','#2E75B6','#E74C3C','#F39C12','#2ECC71','#9B59B6','#E67E22']
-                        if (data.length < 1) return null
                         return (
                           <Line
                             key={key}
-                            data={data}
                             type="monotone"
-                            dataKey="score"
+                            dataKey={key}
                             name={meta?.shortName ?? key}
                             stroke={colors[i]}
                             strokeWidth={2}
                             dot={{ r: 4 }}
                             activeDot={{ r: 6 }}
+                            connectNulls={false}
                           />
                         )
                       })}

@@ -61,6 +61,17 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
     if (hib) return t>=45?'Within Normal Limits':t>=40?'Mild limitation':t>=30?'Moderate limitation':'Severe limitation'
     return t<55?'Within Normal Limits':t<60?'Mild':t<70?'Moderate':'Severe'
   }
+
+  // Returns [bgRGB, textRGB] for a PROMIS interpretation label
+  function sevColors(interp: string): [number[], number[]] {
+    const s = interp.toLowerCase()
+    if (s.includes('normal') || s.includes('minimal') || s.includes('none')) return [[213,245,227],[39,174,96]]
+    if (s.includes('mild'))     return [[254,249,231],[211,84,0]]
+    if (s.includes('moderate')) return [[253,235,208],[186,74,0]]
+    if (s.includes('severe'))   return [[253,237,236],[192,57,43]]
+    return [[245,245,245],[120,120,120]]
+  }
+
   const phq9Sev  = (s: number) => s<=4?'None-Minimal':s<=9?'Mild':s<=14?'Moderate':s<=19?'Moderately Severe':'Severe'
   const gad7Sev  = (s: number) => s<=4?'Minimal':s<=9?'Mild':s<=14?'Moderate':'Severe'
   const tskInterp= (s: number) => s>=37?'Elevated kinesiophobia (>=37)':'Within normal range (<37)'
@@ -155,13 +166,63 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
   ]
 
   if(nVisits===1){
+    // Custom single-visit PROMIS table with score bar and severity coloring
+    const DOM_W=150, T_W=52, BAR_W=118, INT_W=192
+    const HDR_H=22, ROW_H=20, PAD=5
+    const totalW=DOM_W+T_W+BAR_W+INT_W
+    checkPage(HDR_H+7*ROW_H+4)
+    const tblY=y
+    fillRect(ML,tblY,totalW,HDR_H,HDRBG)
+    pdf.setFont('helvetica','bold'); pdf.setFontSize(8.5); setClr(NAVY)
+    pdf.text('PROMIS Domain',ML+PAD,tblY+14)
+    pdf.text('T-Score',ML+DOM_W+T_W/2,tblY+14,{align:'center'})
+    pdf.text('Score Range (20–80)',ML+DOM_W+T_W+BAR_W/2,tblY+14,{align:'center'})
+    pdf.text('Interpretation',ML+DOM_W+T_W+BAR_W+PAD,tblY+14)
+    y=tblY+HDR_H
     const visit=visits[0]
-    const promisRows=PROMIS_CONFIGS.map(cfg=>{
+    PROMIS_CONFIGS.forEach((cfg,ri)=>{
+      checkPage(ROW_H+2)
+      fillRect(ML,y,totalW,ROW_H,ri%2===0?WHITE:ALT)
       const resp=visit.responses.find(r=>r.instrument?.scoring_config_key===cfg.rawKey)
-      const t=resp?.t_score??0
-      return [cfg.label, fmtI(resp?.raw_score), fmtT(resp?.t_score), interpPromis(t,cfg.hib)]
+      const t=resp?.t_score??null
+      const interp=t!=null?interpPromis(t,cfg.hib):'N/A'
+      const [bgClr,txtClr]=sevColors(interp)
+      // Domain
+      pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5); setClr([30,30,30])
+      pdf.text(safe(cfg.label),ML+PAD,y+13)
+      // T-Score (severity colored)
+      setClr(t!=null?txtClr:GRAY)
+      pdf.text(fmtT(resp?.t_score),ML+DOM_W+T_W/2,y+13,{align:'center'})
+      // Score bar
+      const barX=ML+DOM_W+T_W+PAD
+      const barInnerW=BAR_W-PAD*2
+      const barH=8
+      const barY=y+(ROW_H-barH)/2
+      pdf.setFillColor(220,220,220); pdf.rect(barX,barY,barInnerW,barH,'F')
+      if(t!=null){
+        const tClamped=Math.min(80,Math.max(20,t))
+        const fillW=((tClamped-20)/60)*barInnerW
+        pdf.setFillColor(txtClr[0],txtClr[1],txtClr[2]); pdf.rect(barX,barY,fillW,barH,'F')
+      }
+      // T=50 reference tick
+      const refX=barX+(30/60)*barInnerW
+      pdf.setDrawColor(80,80,80); pdf.setLineWidth(0.75); pdf.line(refX,barY-1,refX,barY+barH+1)
+      // Interpretation cell (colored background + text)
+      const intX=ML+DOM_W+T_W+BAR_W
+      fillRect(intX,y,INT_W,ROW_H,bgClr)
+      setClr(txtClr); pdf.setFontSize(8)
+      pdf.text(pdf.splitTextToSize(safe(interp),INT_W-PAD*2),intX+PAD,y+12)
+      y+=ROW_H
     })
-    drawTable(['PROMIS Domain','Raw Score','T-Score','Interpretation'],[180,62,62,208],promisRows)
+    const tblH=y-tblY
+    pdf.setDrawColor(180,180,180); pdf.setLineWidth(0.5); pdf.rect(ML,tblY,totalW,tblH)
+    pdf.line(ML+DOM_W,tblY,ML+DOM_W,tblY+tblH)
+    pdf.line(ML+DOM_W+T_W,tblY,ML+DOM_W+T_W,tblY+tblH)
+    pdf.line(ML+DOM_W+T_W+BAR_W,tblY,ML+DOM_W+T_W+BAR_W,tblY+tblH)
+    pdf.line(ML,tblY+HDR_H,ML+totalW,tblY+HDR_H)
+    let dY2=tblY+HDR_H
+    for(let i=0;i<PROMIS_CONFIGS.length-1;i++){dY2+=ROW_H;pdf.line(ML,dY2,ML+totalW,dY2)}
+    y+=6
   } else {
     // Multi-visit PROMIS table
     const DOM_W=130, RAW_W=36, T_W=42
@@ -202,11 +263,19 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
       vx=ML+DOM_W
       visits.forEach((visit,vi)=>{
         const resp=visit.responses.find(r=>r.instrument?.scoring_config_key===cfg.rawKey)
-        const t=resp?.t_score??0
+        const t=resp?.t_score??null
+        const interp=t!=null?interpPromis(t,cfg.hib):'N/A'
+        const [bgClr,txtClr]=sevColors(interp)
+        // Raw score (neutral color)
+        setClr([30,30,30]); pdf.setFontSize(8)
         pdf.text(fmtI(resp?.raw_score),vx+RAW_W/2,y+13,{align:'center'})
+        // T-Score (severity colored)
+        setClr(t!=null?txtClr:[120,120,120])
         pdf.text(fmtT(resp?.t_score),vx+RAW_W+T_W/2,y+13,{align:'center'})
-        pdf.setFontSize(7.5)
-        pdf.text(pdf.splitTextToSize(safe(interpPromis(t,cfg.hib)),INT_W-PAD*2),vx+RAW_W+T_W+PAD,y+12)
+        // Interpretation cell (light background + colored text)
+        fillRect(vx+RAW_W+T_W,y,INT_W,ROW_H,bgClr)
+        setClr(txtClr); pdf.setFontSize(7.5)
+        pdf.text(pdf.splitTextToSize(safe(interp),INT_W-PAD*2),vx+RAW_W+T_W+PAD,y+12)
         pdf.setFontSize(8); vx+=RAW_W+T_W+INT_W
       })
       y+=ROW_H
