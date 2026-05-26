@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { SURVEY_QUESTIONS } from '@/config/surveyQuestions'
 import { INSTRUMENT_META } from '@/config/scoring'
 import type { Instrument, InstrumentScoringConfig } from '@/types/database'
+import InstrumentPreviewModal from '@/components/InstrumentPreviewModal'
 
 interface SeverityBand {
   max: string
@@ -48,6 +49,7 @@ export default function InstrumentsPage() {
   const [form, setForm] = useState({ ...EMPTY_FORM })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [preview, setPreview] = useState<Instrument | null>(null)
 
   useEffect(() => { loadInstruments() }, [])
 
@@ -451,20 +453,30 @@ export default function InstrumentsPage() {
                       </div>
                     )}
                   </div>
-                  {!hardcoded && (
+                  <div className="flex items-center gap-3 ml-4 flex-shrink-0">
                     <button
-                      onClick={() => toggleActive(inst)}
-                      className="text-sm text-gray-500 hover:text-gray-700 ml-4 flex-shrink-0"
+                      onClick={() => setPreview(inst)}
+                      className="text-xs text-blue-600 hover:underline"
                     >
-                      {inst.is_active ? 'Deactivate' : 'Activate'}
+                      Preview
                     </button>
-                  )}
+                    {!hardcoded && (
+                      <button
+                        onClick={() => toggleActive(inst)}
+                        className="text-sm text-gray-500 hover:text-gray-700"
+                      >
+                        {inst.is_active ? 'Deactivate' : 'Activate'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               )
             })}
           </div>
         )}
       </div>
+
+      {preview && <InstrumentPreviewModal instrument={preview} onClose={() => setPreview(null)} />}
     </>
   )
 }
