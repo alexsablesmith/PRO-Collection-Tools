@@ -1,8 +1,24 @@
+import { useEffect, useState } from 'react'
 import Head from 'next/head'
+import { supabase } from '@/lib/supabase'
 import { INSTRUMENT_META } from '@/config/scoring'
+import type { Instrument } from '@/types/database'
+import InstrumentPreviewModal from '@/components/InstrumentPreviewModal'
 
 export default function ScoringRulesPage() {
   const instruments = Object.entries(INSTRUMENT_META)
+  const [dbInstruments, setDbInstruments] = useState<Instrument[]>([])
+  const [preview, setPreview] = useState<Instrument | null>(null)
+
+  useEffect(() => {
+    supabase.from('instruments').select('*').eq('is_active', true).then(({ data }) => {
+      setDbInstruments(data ?? [])
+    })
+  }, [])
+
+  function getDbInstrument(key: string): Instrument | undefined {
+    return dbInstruments.find(i => i.scoring_config_key === key)
+  }
 
   return (
     <>
@@ -34,6 +50,7 @@ export default function ScoringRulesPage() {
                   <th className="text-left px-4 py-2 font-semibold text-navy-DEFAULT">Direction</th>
                   <th className="text-left px-4 py-2 font-semibold text-navy-DEFAULT">Items</th>
                   <th className="text-left px-4 py-2 font-semibold text-navy-DEFAULT">Raw Range</th>
+                  <th className="px-4 py-2"></th>
                 </tr>
               </thead>
               <tbody>
@@ -48,6 +65,16 @@ export default function ScoringRulesPage() {
                     </td>
                     <td className="px-4 py-2 text-gray-600">4</td>
                     <td className="px-4 py-2 text-gray-600">4–20</td>
+                    <td className="px-4 py-2 text-right">
+                      {getDbInstrument(key) && (
+                        <button
+                          onClick={() => setPreview(getDbInstrument(key)!)}
+                          className="text-xs text-blue-600 hover:underline"
+                        >
+                          Preview
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -103,9 +130,20 @@ export default function ScoringRulesPage() {
             notes: 'Subscales: Rumination (items 8–11), Magnification (items 6, 7, 13), Helplessness (items 1–5, 12). Range: 0–52.' },
         ].map(({ key, title, bands, notes }) => {
           const meta = INSTRUMENT_META[key]
+          const dbInst = getDbInstrument(key)
           return (
             <div key={key} className="card mb-4">
-              <h2 className="text-lg font-semibold text-navy-DEFAULT mb-1">{title}</h2>
+              <div className="flex items-start justify-between mb-1">
+                <h2 className="text-lg font-semibold text-navy-DEFAULT">{title}</h2>
+                {dbInst && (
+                  <button
+                    onClick={() => setPreview(dbInst)}
+                    className="text-xs text-blue-600 hover:underline flex-shrink-0 ml-4"
+                  >
+                    Preview Questions
+                  </button>
+                )}
+              </div>
               <p className="text-xs text-gray-400 mb-3 italic">{meta?.citation}</p>
               <div className="flex flex-wrap gap-2 mb-2">
                 {bands.map(([range, label]) => (
@@ -120,12 +158,57 @@ export default function ScoringRulesPage() {
           )
         })}
 
+        {/* Custom instruments from DB */}
+        {dbInstruments.filter(i => !INSTRUMENT_META[i.scoring_config_key] && i.scoring_config).length > 0 && (
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-gray-800 mb-3">Custom Instruments</h2>
+            {dbInstruments.filter(i => !INSTRUMENT_META[i.scoring_config_key] && i.scoring_config).map(inst => (
+              <div key={inst.id} className="card mb-4">
+                <div className="flex items-start justify-between mb-1">
+                  <h3 className="text-base font-semibold text-navy-DEFAULT">{inst.name}</h3>
+                  <button
+                    onClick={() => setPreview(inst)}
+                    className="text-xs text-blue-600 hover:underline flex-shrink-0 ml-4"
+                  >
+                    Preview Questions
+                  </button>
+                </div>
+                {inst.version && <p className="text-xs text-gray-400 mb-2">{inst.version}</p>}
+                {inst.scoring_config && (
+                  <div className="flex flex-wrap gap-2">
+                    <span className="text-xs bg-gray-100 text-gray-600 rounded px-2 py-1">
+                      Scoring: {inst.scoring_config.type}
+                    </span>
+                    {inst.scoring_config.maxScore != null && (
+                      <span className="text-xs bg-gray-100 text-gray-600 rounded px-2 py-1">
+                        Max: {inst.scoring_config.maxScore}
+                      </span>
+                    )}
+                    {inst.scoring_config.higherIsBetter != null && (
+                      <span className={`text-xs rounded px-2 py-1 ${inst.scoring_config.higherIsBetter ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                        {inst.scoring_config.higherIsBetter ? '↑ Higher = Better' : '↑ Higher = Worse'}
+                      </span>
+                    )}
+                    {inst.scoring_config.severityBands?.map((b, i) => (
+                      <span key={i} className="text-xs bg-gray-50 text-gray-700 rounded px-2 py-1">
+                        {b.max != null ? `≤${b.max}` : 'else'}: {b.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="text-xs text-gray-400 mt-6 p-4 bg-gray-50 rounded-lg">
           <strong>Audit note:</strong> All scoring rules above are implemented exactly as shown in{' '}
           <code>src/config/scoring.ts</code>. Changes to scoring logic require a code deployment and
           appear in the Git commit history. Contact your administrator for the repository link.
         </div>
       </div>
+
+      {preview && <InstrumentPreviewModal instrument={preview} onClose={() => setPreview(null)} />}
     </>
   )
 }

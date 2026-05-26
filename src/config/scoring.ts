@@ -295,10 +295,32 @@ export const SCORING_FUNCTIONS: Record<string, (r: Record<string, number>) => Sc
   pcs:                            scorePCS,
 }
 
+interface DynamicScoringConfig {
+  type: string
+  higherIsBetter?: boolean
+  maxScore?: number
+  severityBands?: { max?: number; label: string; interpretation: string }[]
+}
+
+function scoreDynamic(responses: Record<string, number>, config: DynamicScoringConfig): ScoreResult {
+  const rawScore = Object.values(responses).reduce((a, b) => a + b, 0)
+  const band = config.severityBands?.find(b => b.max == null || rawScore <= b.max)
+  return {
+    rawScore,
+    totalScore: rawScore,
+    severityLabel:  band?.label ?? '',
+    interpretation: band?.interpretation ?? '',
+  }
+}
+
 export function scoreInstrument(
   scoringConfigKey: string,
-  responses: Record<string, number>
+  responses: Record<string, number>,
+  instrument?: { scoring_config?: DynamicScoringConfig | null }
 ): ScoreResult {
+  if (instrument?.scoring_config?.type === 'sum') {
+    return scoreDynamic(responses, instrument.scoring_config)
+  }
   const fn = SCORING_FUNCTIONS[scoringConfigKey]
   if (!fn) throw new Error(`Unknown scoring config key: ${scoringConfigKey}`)
   return fn(responses)

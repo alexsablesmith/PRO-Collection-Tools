@@ -8,8 +8,9 @@ const NAV_ITEMS = [
   { href: '/patients',        label: 'Patients',      roles: ['admin','clinician','reviewer'] },
   { href: '/scoring-rules',   label: 'Scoring Rules', roles: ['admin','clinician','reviewer'] },
   { href: '/admin/export',    label: 'Export Data',   roles: ['admin'] },
-  { href: '/admin/batteries', label: 'Batteries',     roles: ['admin'] },
-  { href: '/admin/users',     label: 'Users',         roles: ['admin'] },
+  { href: '/admin/batteries',   label: 'Batteries',    roles: ['admin'] },
+  { href: '/admin/instruments', label: 'Instruments',  roles: ['admin'] },
+  { href: '/admin/users',       label: 'Users',        roles: ['admin'] },
 ]
 
 export default function Layout({ children }: { children: ReactNode }) {

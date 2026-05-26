@@ -35,6 +35,20 @@ export interface Patient {
   created_at: string
 }
 
+export interface InstrumentQuestionDef {
+  title: string
+  timeframe?: string
+  items: { id: string; text: string; options?: { value: number; label: string }[] }[]
+  options: { value: number; label: string }[]
+}
+
+export interface InstrumentScoringConfig {
+  type: string
+  higherIsBetter?: boolean
+  maxScore?: number
+  severityBands?: { max?: number; label: string; interpretation: string }[]
+}
+
 export interface Instrument {
   id: string
   code: string
@@ -43,6 +57,8 @@ export interface Instrument {
   scoring_config_key: string
   languages: Language[]
   is_active: boolean
+  questions?: Record<string, InstrumentQuestionDef> | null
+  scoring_config?: InstrumentScoringConfig | null
 }
 
 export interface Battery {

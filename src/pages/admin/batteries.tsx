@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import type { Battery, Instrument } from '@/types/database'
 import { format, parseISO } from 'date-fns'
+import InstrumentPreviewModal from '@/components/InstrumentPreviewModal'
 
 export default function BatteriesPage() {
   const { profile } = useAuth()
@@ -15,6 +16,7 @@ export default function BatteriesPage() {
   const [selected,    setSelected]    = useState<string[]>([])
   const [saving,      setSaving]      = useState(false)
   const [error,       setError]       = useState('')
+  const [preview,     setPreview]     = useState<Instrument | null>(null)
 
   useEffect(() => { loadData() }, [])
 
@@ -77,12 +79,19 @@ export default function BatteriesPage() {
                 {instruments.map(inst => (
                   <label key={inst.id} className={`flex items-center gap-3 p-2.5 border rounded-lg cursor-pointer transition-colors ${selected.includes(inst.id) ? 'border-navy-DEFAULT bg-ltblue' : 'border-gray-200 hover:bg-gray-50'}`}>
                     <input type="checkbox" checked={selected.includes(inst.id)} onChange={() => toggleInstrument(inst.id)} className="rounded" />
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium">{inst.name}</div>
                       <div className="text-xs text-gray-400">{inst.version} · {inst.languages.join(', ')}</div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={e => { e.preventDefault(); setPreview(inst) }}
+                      className="text-xs text-blue-600 hover:underline flex-shrink-0"
+                    >
+                      Preview
+                    </button>
                     {selected.includes(inst.id) && (
-                      <span className="ml-auto text-xs font-mono text-navy-DEFAULT">#{selected.indexOf(inst.id) + 1}</span>
+                      <span className="text-xs font-mono text-navy-DEFAULT">#{selected.indexOf(inst.id) + 1}</span>
                     )}
                   </label>
                 ))}
@@ -144,6 +153,8 @@ export default function BatteriesPage() {
           </div>
         )}
       </div>
+
+      {preview && <InstrumentPreviewModal instrument={preview} onClose={() => setPreview(null)} />}
     </>
   )
 }
