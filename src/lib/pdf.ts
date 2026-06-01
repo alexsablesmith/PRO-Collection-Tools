@@ -206,7 +206,7 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
       if(t!=null){
         const tClamped=Math.min(80,Math.max(20,t))
         const fillW=((tClamped-20)/60)*barInnerW
-        pdf.setFillColor(txtClr[0],txtClr[1],txtClr[2]); pdf.rect(barX,barY,fillW,barH,'F')
+        pdf.setFillColor(BLUE[0],BLUE[1],BLUE[2]); pdf.rect(barX,barY,fillW,barH,'F')
       }
       // T=50 reference tick
       const refX=barX+(30/60)*barInnerW
@@ -578,6 +578,19 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
   drawScaleTable('PCS',52,visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='pcs');return r?.total_score??0}),visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='pcs');return pcsInterp(r?.total_score??0)}))
   italicNote('Scores >=30 are clinically significant and associated with greater pain-related disability.')
   y+=10
+
+  // GIC
+  const hasGIC = visits.some(v => v.responses.some(r => r.instrument?.scoring_config_key === 'gic'))
+  if (hasGIC) {
+    sectionHead('Global Impression of Change')
+    drawScaleTable(
+      'GIC', 7,
+      visits.map(v => { const r = v.responses.find(r => r.instrument?.scoring_config_key === 'gic'); return r?.total_score ?? 0 }),
+      visits.map(v => { const r = v.responses.find(r => r.instrument?.scoring_config_key === 'gic'); return r?.severity_label ?? '' })
+    )
+    italicNote("Score: 1=A lot better, 4=No change, 7=A lot worse. Reflects patient's overall impression of change since starting the functional restoration program.")
+    y += 4
+  }
 
   // Disclaimer
   checkPage(30)
