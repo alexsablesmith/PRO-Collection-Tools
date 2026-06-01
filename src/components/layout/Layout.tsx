@@ -28,17 +28,26 @@ export default function Layout({ children }: { children: ReactNode }) {
                 MDE Platform
               </Link>
               <nav className="hidden md:flex items-center gap-1">
-                {NAV_ITEMS.filter(item =>
-                  profile ? item.roles.includes(profile.role) : item.roles.includes('reviewer')
-                ).map(item => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-white/20 transition-colors"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+                {NAV_ITEMS.map(item => {
+                  const hasAccess = profile ? item.roles.includes(profile.role) : false
+                  return hasAccess ? (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-white/20 transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <span
+                      key={item.href}
+                      title="You don't have permission to access this feature"
+                      className="px-3 py-2 rounded-md text-sm font-medium text-white/30 cursor-not-allowed select-none"
+                    >
+                      {item.label}
+                    </span>
+                  )
+                })}
               </nav>
             </div>
             <div className="flex items-center gap-3">
