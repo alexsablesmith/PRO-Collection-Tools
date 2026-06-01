@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import Head from 'next/head'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
@@ -99,8 +100,13 @@ export default function OrganizationsPage() {
                     {org.user_count} {org.user_count === 1 ? 'user' : 'users'} ·{' '}
                     Created {org.created_at ? format(parseISO(org.created_at), 'MMM d, yyyy') : ''}
                   </div>
-                  <div className="text-xs text-gray-300 font-mono mt-0.5">{org.id}</div>
                 </div>
+                <Link
+                  href={`/admin/users?org_id=${org.id}&org_name=${encodeURIComponent(org.name)}`}
+                  className="btn-secondary text-sm flex-shrink-0 ml-4"
+                >
+                  Manage Users
+                </Link>
               </div>
             ))}
           </div>

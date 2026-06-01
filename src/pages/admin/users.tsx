@@ -28,16 +28,20 @@ export default function UsersPage() {
 
   const canManage = profile?.role === 'app_admin' || profile?.role === 'org_admin'
 
+  // app_admin can view any org's users via ?org_id= query param
+  const targetOrgId   = (router.query.org_id as string)   ?? profile?.organization_id
+  const targetOrgName = (router.query.org_name as string) ?? null
+
   useEffect(() => {
     if (profile && !canManage) { router.replace('/patients'); return }
-    if (profile) loadUsers()
-  }, [profile])
+    if (profile && router.isReady) loadUsers()
+  }, [profile, router.isReady, targetOrgId])
 
   async function loadUsers() {
     const { data } = await supabase
       .from('user_profiles')
       .select('*')
-      .eq('organization_id', profile?.organization_id)
+      .eq('organization_id', targetOrgId)
       .order('created_at')
     setUsers(data ?? [])
     setLoading(false)
@@ -63,7 +67,7 @@ export default function UsersPage() {
         body: JSON.stringify({
           email: inviteEmail.trim(),
           role: inviteRole,
-          organization_id: profile!.organization_id,
+          organization_id: targetOrgId!,
         }),
       })
       const json = await res.json()
@@ -87,8 +91,15 @@ export default function UsersPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Users</h1>
-            <p className="text-gray-500 text-sm mt-0.5">Manage users in your organization</p>
+            <p className="text-gray-500 text-sm mt-0.5">
+              {targetOrgName ? `Managing: ${targetOrgName}` : 'Manage users in your organization'}
+            </p>
           </div>
+          {targetOrgName && (
+            <button onClick={() => router.push('/admin/organizations')} className="btn-secondary text-sm">
+              ← Back to Organizations
+            </button>
+          )}
           <button onClick={() => { setShowInvite(true); setInviteMsg(null) }} className="btn-primary text-sm">
             + Invite User
           </button>
