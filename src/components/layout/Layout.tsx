@@ -5,12 +5,13 @@ import { useAuth } from '@/hooks/useAuth'
 import clsx from 'clsx'
 
 const NAV_ITEMS = [
-  { href: '/patients',        label: 'Patients',      roles: ['admin','clinician','reviewer'] },
-  { href: '/scoring-rules',   label: 'Scoring Rules', roles: ['admin','clinician','reviewer'] },
-  { href: '/admin/export',    label: 'Export Data',   roles: ['admin'] },
-  { href: '/admin/batteries',   label: 'Batteries',    roles: ['admin'] },
-  { href: '/admin/instruments', label: 'Instruments',  roles: ['admin'] },
-  { href: '/admin/users',       label: 'Users',        roles: ['admin'] },
+  { href: '/patients',            label: 'Patients',       roles: ['app_admin','org_admin','clinical_user','read_only'] },
+  { href: '/scoring-rules',       label: 'Scoring Rules',  roles: ['app_admin','org_admin','clinical_user','read_only'] },
+  { href: '/admin/export',        label: 'Export Data',    roles: ['app_admin','org_admin'] },
+  { href: '/admin/batteries',     label: 'Batteries',      roles: ['app_admin','org_admin'] },
+  { href: '/admin/instruments',   label: 'Instruments',    roles: ['app_admin'] },
+  { href: '/admin/users',         label: 'Users',          roles: ['app_admin','org_admin'] },
+  { href: '/admin/organizations', label: 'Organizations',  roles: ['app_admin'] },
 ]
 
 export default function Layout({ children }: { children: ReactNode }) {

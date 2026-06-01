@@ -2,6 +2,7 @@ import type { AppProps } from 'next/app'
 import { useRouter } from 'next/router'
 import { AuthProvider, useAuth } from '@/hooks/useAuth'
 import Layout from '@/components/layout/Layout'
+import MfaGuard from '@/components/MfaGuard'
 import '@/styles/globals.css'
 import { useEffect } from 'react'
 
@@ -43,7 +44,9 @@ function AppContent({ Component, pageProps }: AppProps) {
 export default function App(props: AppProps) {
   return (
     <AuthProvider>
-      <AppContent {...props} />
+      <MfaGuard>
+        <AppContent {...props} />
+      </MfaGuard>
     </AuthProvider>
   )
 }

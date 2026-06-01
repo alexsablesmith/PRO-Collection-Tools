@@ -25,8 +25,8 @@ export default function PatientDetailPage() {
   const [loading,   setLoading]   = useState(true)
   const [activeTab, setActiveTab] = useState<'history'|'charts'>('history')
 
-  const canSend = profile?.role === 'admin' || profile?.role === 'clinician'
-  const canDelete = profile?.role === 'admin'
+  const canSend   = ['app_admin','org_admin','clinical_user'].includes(profile?.role ?? '')
+  const canDelete = ['app_admin','org_admin'].includes(profile?.role ?? '')
 
 async function deletePatient() {
     if (!confirm('Are you sure you want to delete this patient and all their survey data? This cannot be undone.')) return

@@ -1,21 +1,37 @@
 import { useEffect, useState } from 'react'
 import Head from 'next/head'
+import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import type { UserProfile } from '@/types/database'
 import { format, parseISO } from 'date-fns'
 
+const ROLE_LABELS: Record<string, string> = {
+  app_admin:     'App Admin',
+  org_admin:     'Org Admin',
+  clinical_user: 'Clinical User',
+  read_only:     'Read Only',
+}
+
+const ASSIGNABLE_ROLES = ['org_admin', 'clinical_user', 'read_only'] as const
+
 export default function UsersPage() {
   const { profile } = useAuth()
-  const [users,   setUsers]   = useState<UserProfile[]>([])
-  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+  const [users,      setUsers]      = useState<UserProfile[]>([])
+  const [loading,    setLoading]    = useState(true)
+  const [showInvite, setShowInvite] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
-  const [inviteRole,  setInviteRole]  = useState<'clinician'|'reviewer'>('clinician')
-  const [inviting,    setInviting]    = useState(false)
-  const [inviteMsg,   setInviteMsg]   = useState('')
-  const [error,       setError]       = useState('')
+  const [inviteRole,  setInviteRole]  = useState<typeof ASSIGNABLE_ROLES[number]>('clinical_user')
+  const [sending,    setSending]    = useState(false)
+  const [inviteMsg,  setInviteMsg]  = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
-  useEffect(() => { loadUsers() }, [])
+  const canManage = profile?.role === 'app_admin' || profile?.role === 'org_admin'
+
+  useEffect(() => {
+    if (profile && !canManage) { router.replace('/patients'); return }
+    if (profile) loadUsers()
+  }, [profile])
 
   async function loadUsers() {
     const { data } = await supabase
@@ -27,17 +43,8 @@ export default function UsersPage() {
     setLoading(false)
   }
 
-  async function inviteUser(e: React.FormEvent) {
-    e.preventDefault()
-    setError(''); setInviteMsg(''); setInviting(true)
-    // In production this would call a server-side function to send an invitation email
-    // For now, we create the auth user via admin API (requires service role key on server)
-    setInviteMsg(`Invitation feature requires server-side setup. Please manually create user ${inviteEmail} in Supabase Auth dashboard, then assign them to this organization with role: ${inviteRole}.`)
-    setInviting(false)
-  }
-
-  async function updateRole(userId: string, newRole: string) {
-    await supabase.from('user_profiles').update({ role: newRole }).eq('id', userId)
+  async function updateRole(userId: string, role: string) {
+    await supabase.from('user_profiles').update({ role }).eq('id', userId)
     loadUsers()
   }
 
@@ -46,90 +53,136 @@ export default function UsersPage() {
     loadUsers()
   }
 
-  const ROLE_COLORS: Record<string, string> = {
-    admin:     'bg-purple-100 text-purple-700',
-    clinician: 'bg-blue-100 text-blue-700',
-    reviewer:  'bg-gray-100 text-gray-600',
+  async function sendInvite() {
+    if (!inviteEmail.trim()) return
+    setSending(true); setInviteMsg(null)
+    try {
+      const res = await fetch('/api/admin/invite-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: inviteEmail.trim(),
+          role: inviteRole,
+          organization_id: profile!.organization_id,
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        setInviteMsg({ type: 'error', text: json.error ?? 'Failed to send invite.' })
+      } else {
+        setInviteMsg({ type: 'success', text: `Invite sent to ${inviteEmail.trim()}.` })
+        setInviteEmail(''); setInviteRole('clinical_user'); setShowInvite(false)
+        loadUsers()
+      }
+    } catch {
+      setInviteMsg({ type: 'error', text: 'Network error. Please try again.' })
+    }
+    setSending(false)
   }
 
   return (
     <>
       <Head><title>Users — MDE Platform</title></Head>
       <div>
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Manage staff access to the MDE Platform</p>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Users</h1>
+            <p className="text-gray-500 text-sm mt-0.5">Manage users in your organization</p>
+          </div>
+          <button onClick={() => { setShowInvite(true); setInviteMsg(null) }} className="btn-primary text-sm">
+            + Invite User
+          </button>
         </div>
 
-        {/* Invite */}
-        <div className="card mb-6">
-          <h2 className="font-semibold text-gray-800 mb-4">Invite New User</h2>
-          <form onSubmit={inviteUser} className="flex flex-col sm:flex-row gap-3">
-            <input
-              type="email" required placeholder="Email address" value={inviteEmail}
-              onChange={e => setInviteEmail(e.target.value)} className="input flex-1"
-            />
-            <select value={inviteRole} onChange={e => setInviteRole(e.target.value as any)} className="input sm:w-40">
-              <option value="clinician">Clinician</option>
-              <option value="reviewer">Reviewer</option>
-              <option value="admin">Admin</option>
-            </select>
-            <button type="submit" disabled={inviting} className="btn-primary whitespace-nowrap">
-              {inviting ? 'Inviting...' : 'Send Invite'}
-            </button>
-          </form>
-          {inviteMsg && <p className="text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-3">{inviteMsg}</p>}
-          {error && <p className="text-sm text-red-700 bg-red-50 rounded-lg px-3 py-2 mt-3">{error}</p>}
-        </div>
+        {inviteMsg && (
+          <div className={`rounded-lg px-4 py-3 text-sm mb-4 ${inviteMsg.type === 'success' ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-700'}`}>
+            {inviteMsg.text}
+          </div>
+        )}
 
-        {/* Users list */}
-        <div className="card p-0 overflow-hidden">
-          {loading ? (
-            <div className="p-12 text-center text-gray-400">Loading...</div>
-          ) : (
+        {showInvite && (
+          <div className="card mb-6 border-2 border-blue-200">
+            <h2 className="font-semibold text-gray-800 mb-4">Invite New User</h2>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="label">Email address</label>
+                <input
+                  type="email"
+                  className="input"
+                  placeholder="user@example.com"
+                  value={inviteEmail}
+                  onChange={e => setInviteEmail(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && sendInvite()}
+                />
+              </div>
+              <div>
+                <label className="label">Role</label>
+                <select className="input" value={inviteRole} onChange={e => setInviteRole(e.target.value as any)}>
+                  {ASSIGNABLE_ROLES.map(r => (
+                    <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={sendInvite} disabled={sending || !inviteEmail.trim()} className="btn-primary text-sm">
+                {sending ? 'Sending...' : 'Send Invite'}
+              </button>
+              <button onClick={() => { setShowInvite(false); setInviteMsg(null) }} className="btn-secondary text-sm">Cancel</button>
+            </div>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="text-center py-12 text-gray-400">Loading...</div>
+        ) : (
+          <div className="card overflow-hidden p-0">
             <table className="w-full text-sm">
-              <thead className="bg-hdrbg border-b border-gray-200">
+              <thead className="bg-hdrbg">
                 <tr>
                   <th className="text-left px-4 py-3 font-semibold text-navy-DEFAULT">User</th>
                   <th className="text-left px-4 py-3 font-semibold text-navy-DEFAULT">Role</th>
-                  <th className="text-left px-4 py-3 font-semibold text-navy-DEFAULT hidden sm:table-cell">Joined</th>
+                  <th className="text-left px-4 py-3 font-semibold text-navy-DEFAULT">Joined</th>
                   <th className="text-left px-4 py-3 font-semibold text-navy-DEFAULT">Status</th>
-                  <th className="px-4 py-3"></th>
+                  <th className="px-4 py-3" />
                 </tr>
               </thead>
               <tbody>
                 {users.map((u, i) => (
-                  <tr key={u.id} className={`border-b border-gray-50 ${i % 2 === 0 ? '' : 'bg-gray-50/50'}`}>
+                  <tr key={u.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                     <td className="px-4 py-3">
-                      <div className="font-medium text-gray-900">{u.full_name || 'Unnamed User'}</div>
-                      <div className="text-xs text-gray-400">{u.id}</div>
+                      <div className="font-medium text-gray-900">{u.full_name || '—'}</div>
+                      <div className="text-xs text-gray-400 font-mono">{u.id.slice(0, 8)}…</div>
                     </td>
                     <td className="px-4 py-3">
-                      {u.id === profile?.id ? (
-                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${ROLE_COLORS[u.role]}`}>{u.role}</span>
+                      {u.role === 'app_admin' ? (
+                        <span className="text-xs font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full">
+                          App Admin
+                        </span>
                       ) : (
                         <select
+                          className="text-sm border border-gray-200 rounded px-2 py-1"
                           value={u.role}
                           onChange={e => updateRole(u.id, e.target.value)}
-                          className="text-xs border border-gray-200 rounded-md px-2 py-1"
+                          disabled={u.id === profile?.id}
                         >
-                          <option value="admin">Admin</option>
-                          <option value="clinician">Clinician</option>
-                          <option value="reviewer">Reviewer</option>
+                          {ASSIGNABLE_ROLES.map(r => (
+                            <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+                          ))}
                         </select>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-gray-500 hidden sm:table-cell text-xs">
+                    <td className="px-4 py-3 text-gray-500">
                       {u.created_at ? format(parseISO(u.created_at), 'MMM d, yyyy') : '—'}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${u.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                        {u.is_active ? 'Active' : 'Inactive'}
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${u.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                        {u.is_active ? 'Active' : 'Pending / Inactive'}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {u.id !== profile?.id && (
-                        <button onClick={() => toggleActive(u)} className="text-xs text-gray-400 hover:text-gray-600">
+                      {u.id !== profile?.id && u.role !== 'app_admin' && (
+                        <button onClick={() => toggleActive(u)} className="text-xs text-gray-500 hover:text-gray-700">
                           {u.is_active ? 'Deactivate' : 'Activate'}
                         </button>
                       )}
@@ -138,8 +191,8 @@ export default function UsersPage() {
                 ))}
               </tbody>
             </table>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </>
   )

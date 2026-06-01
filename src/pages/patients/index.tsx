@@ -45,7 +45,7 @@ async function loadPatients() {
     )
   })
 
-  const canCreate = profile?.role === 'admin' || profile?.role === 'clinician'
+  const canCreate = ['app_admin','org_admin','clinical_user'].includes(profile?.role ?? '')
 
   return (
     <>
