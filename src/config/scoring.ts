@@ -202,6 +202,17 @@ export function scorePainInterference(responses: Record<string, number>): ScoreR
   return scorePromis(responses, PROMIS_PAIN_INTERFERENCE_4A, false)
 }
 
+export function scoreGIC(responses: Record<string, number>): ScoreResult {
+  const val = responses['gic_1'] ?? 0
+  const label = val <= 3 ? 'Improved' : val === 4 ? 'No Change' : 'Worse'
+  const interp = val <= 3
+    ? 'Patient reports overall improvement since starting the program'
+    : val === 4
+    ? 'Patient reports no overall change since starting the program'
+    : 'Patient reports overall worsening since starting the program'
+  return { rawScore: val, totalScore: val, severityLabel: label, interpretation: interp }
+}
+
 export function scorePainNRS(responses: Record<string, number>): ScoreResult {
   const score = responses['nrs'] ?? 0
   const label = score <= 3 ? 'Mild' : score <= 6 ? 'Moderate' : 'Severe'
@@ -288,6 +299,7 @@ export const SCORING_FUNCTIONS: Record<string, (r: Record<string, number>) => Sc
   promis_sleep_4a_v1:             scoreSleep,
   promis_social_4a_v1:            scoreSocialRoles,
   promis_pain_interference_4a_v1: scorePainInterference,
+  gic:                            scoreGIC,
   pain_nrs:                       scorePainNRS,
   phq9:                           scorePHQ9,
   gad7:                           scoreGAD7,
@@ -431,5 +443,13 @@ export const INSTRUMENT_META: Record<string, {
     isPromis:       false,
     maxScore:       52,
     citation:       'Sullivan MJL, Bishop SR, Pivik J. Psychological Assessment. 1995;7(4):524-532.',
+  },
+  gic: {
+    displayName:    'Global Impression of Change',
+    shortName:      'GIC',
+    higherIsBetter: false,
+    isPromis:       false,
+    maxScore:       7,
+    citation:       'Patient Global Impression of Change. Single-item scale for overall perceived change since treatment initiation.',
   },
 }

@@ -490,6 +490,42 @@ export const SURVEY_QUESTIONS: Record<string, Record<string, QuestionDef>> = {
       ],
     },
   },
+  gic: {
+    en: {
+      title: 'Global Impression of Change',
+      items: [{
+        id: 'gic_1',
+        text: 'Since starting the functional restoration program, how would you describe your OVERALL condition?',
+        options: [
+          { value: 1, label: 'A lot better' },
+          { value: 2, label: 'Better' },
+          { value: 3, label: 'Slightly better' },
+          { value: 4, label: "No change, I'm about the same as when I started the program" },
+          { value: 5, label: 'Slightly worse' },
+          { value: 6, label: 'Worse' },
+          { value: 7, label: 'A lot worse' },
+        ],
+      }],
+      options: [],
+    },
+    es: {
+      title: 'Impresión Global de Cambio',
+      items: [{
+        id: 'gic_1',
+        text: 'Desde que comenzó el programa de restauración funcional, ¿cómo describiría su condición EN GENERAL?',
+        options: [
+          { value: 1, label: 'Mucho mejor' },
+          { value: 2, label: 'Mejor' },
+          { value: 3, label: 'Ligeramente mejor' },
+          { value: 4, label: 'Sin cambios, estoy más o menos igual que cuando comencé el programa.' },
+          { value: 5, label: 'Ligeramente peor' },
+          { value: 6, label: 'Peor' },
+          { value: 7, label: 'Mucho peor' },
+        ],
+      }],
+      options: [],
+    },
+  },
   pain_nrs: {
     en: {
       title: 'Pain Intensity',

@@ -128,6 +128,9 @@ export default function ScoringRulesPage() {
           { key: 'pcs', title: 'Pain Catastrophizing Scale (PCS)',
             bands: [['< 30','Below Clinical Threshold'],['≥ 30','Clinically Significant']],
             notes: 'Subscales: Rumination (items 8–11), Magnification (items 6, 7, 13), Helplessness (items 1–5, 12). Range: 0–52.' },
+          { key: 'gic', title: 'Global Impression of Change',
+            bands: [['1–3','Improved'],['4','No Change'],['5–7','Worse']],
+            notes: 'Single item. Score is the response value (1 = A lot better, 7 = A lot worse).' },
         ].map(({ key, title, bands, notes }) => {
           const meta = INSTRUMENT_META[key]
           const dbInst = getDbInstrument(key)
