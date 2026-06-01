@@ -457,7 +457,7 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
 
   // ── Scale tables helper ──
   // showInterp=false renders a score-only table (no interpretation column, no sub-header)
-  function drawScaleTable(name: string, maxVal: number, scoresArr: number[], interpsArr: string[], showInterp: boolean = true) {
+  function drawScaleTable(name: string, maxVal: number, scoresArr: (number | string)[], interpsArr: string[], showInterp: boolean = true) {
     const HDR_H=22, PAD=5
     const SCALE_W=90, MAX_W=44, SCR_W=54
 
@@ -557,25 +557,33 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
 
   // PHQ-9
   sectionHead('PHQ-9 - Depression Screening (Past 2 Weeks)')
-  drawScaleTable('PHQ-9',27,visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='phq9');return r?.total_score??0}),visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='phq9');return phq9Sev(r?.total_score??0)}))
+  drawScaleTable('PHQ-9',27,
+    visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='phq9');return r?.total_score??'No Data'}),
+    visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='phq9');return r!=null?phq9Sev(r.total_score??0):'No Data'}))
   italicNote('Severity bands: None-Minimal <=4 | Mild 5-9 | Moderate 10-14 | Moderately Severe 15-19 | Severe >=20')
   y+=4
 
   // GAD-7
   sectionHead('GAD-7 - Generalized Anxiety Screening (Past 2 Weeks)')
-  drawScaleTable('GAD-7',21,visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='gad7');return r?.total_score??0}),visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='gad7');return gad7Sev(r?.total_score??0)}))
+  drawScaleTable('GAD-7',21,
+    visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='gad7');return r?.total_score??'No Data'}),
+    visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='gad7');return r!=null?gad7Sev(r.total_score??0):'No Data'}))
   italicNote('Severity bands: Minimal <=4 | Mild 5-9 | Moderate 10-14 | Severe >=15')
   y+=4
 
   // TSK
   sectionHead('Tampa Scale for Kinesiophobia (TSK-11)')
-  drawScaleTable('TSK-11',44,visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='tsk11');return r?.total_score??0}),[],false)
+  drawScaleTable('TSK-11',44,
+    visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='tsk11');return r?.total_score??'No Data'}),
+    [],false)
   italicNote('Higher scores indicate greater fear of pain and re-injury with movement.')
   y+=4
 
   // PCS
   sectionHead('Pain Catastrophizing Scale (PCS)')
-  drawScaleTable('PCS',52,visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='pcs');return r?.total_score??0}),visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='pcs');return pcsInterp(r?.total_score??0)}))
+  drawScaleTable('PCS',52,
+    visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='pcs');return r?.total_score??'No Data'}),
+    visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='pcs');return r!=null?pcsInterp(r.total_score??0):'No Data'}))
   italicNote('Scores >=30 are clinically significant and associated with greater pain-related disability.')
   y+=10
 
@@ -585,8 +593,8 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
     sectionHead('Global Impression of Change')
     drawScaleTable(
       'GIC', 7,
-      visits.map(v => { const r = v.responses.find(r => r.instrument?.scoring_config_key === 'gic'); return r?.total_score ?? 0 }),
-      visits.map(v => { const r = v.responses.find(r => r.instrument?.scoring_config_key === 'gic'); return r?.severity_label ?? '' })
+      visits.map(v => { const r = v.responses.find(r => r.instrument?.scoring_config_key === 'gic'); return r?.total_score ?? 'No Data' }),
+      visits.map(v => { const r = v.responses.find(r => r.instrument?.scoring_config_key === 'gic'); return r?.severity_label ?? 'No Data' })
     )
     italicNote("Score: 1=A lot better, 4=No change, 7=A lot worse. Reflects patient's overall impression of change since starting the functional restoration program.")
     y += 4
