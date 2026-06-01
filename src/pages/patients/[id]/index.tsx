@@ -5,9 +5,10 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { format, parseISO } from 'date-fns'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import type { Patient, SurveyRequest, SurveyResponse, Instrument } from '@/types/database'
 import { INSTRUMENT_META } from '@/config/scoring'
+import PromisScoreChart, { type PromisDomain, type PromisVisit } from '@/components/results/PromisScoreChart'
 
 interface VisitData {
   request:   SurveyRequest
@@ -88,21 +89,32 @@ async function deletePatient() {
     }).filter(d => d.score != null)
   }
 
-  const PROMIS_KEYS = [
-    'promis_physical_function_4a_v2','promis_anxiety_4a_v1','promis_depression_4a_v1',
-    'promis_fatigue_4a_v1','promis_sleep_4a_v1','promis_social_4a_v1','promis_pain_interference_4a_v1',
-  ]
   const OTHER_KEYS = ['phq9','gad7','tsk11','pcs']
 
-  const promisChartData = visits.map(v => {
-    const point: Record<string, any> = {
-      date: v.request.completed_at ? format(parseISO(v.request.completed_at), 'MM/dd/yy') : '',
-    }
-    PROMIS_KEYS.forEach(key => {
-      const resp = v.responses.find(r => r.instrument?.scoring_config_key === key)
-      point[key] = resp?.t_score ?? null
+  // Map scoring_config_key → PromisDomain for the band chart
+  const PROMIS_DOMAIN_MAP: Record<string, PromisDomain> = {
+    'promis_physical_function_4a_v2': 'physical_function',
+    'promis_anxiety_4a_v1':           'anxiety',
+    'promis_depression_4a_v1':        'depression',
+    'promis_fatigue_4a_v1':           'fatigue',
+    'promis_sleep_4a_v1':             'sleep_disturbance',
+    'promis_social_4a_v1':            'social_roles',
+    'promis_pain_interference_4a_v1': 'pain_interference',
+  }
+
+  // Build PromisVisit[] for the band chart — use most recent 3 visits
+  const promisVisits: PromisVisit[] = visits.slice(-3).map(v => {
+    const scores: Partial<Record<PromisDomain, number>> = {}
+    v.responses.forEach(r => {
+      const domain = r.instrument?.scoring_config_key
+        ? PROMIS_DOMAIN_MAP[r.instrument.scoring_config_key]
+        : undefined
+      if (domain && r.t_score != null) scores[domain] = r.t_score
     })
-    return point
+    return {
+      date: v.request.completed_at ? format(parseISO(v.request.completed_at), 'MMM d, yyyy') : '',
+      scores,
+    }
   })
 
   function severityColor(label: string | null) {
@@ -238,67 +250,47 @@ async function deletePatient() {
         {/* Charts Tab */}
         {activeTab === 'charts' && (
           <div>
-            {visits.length < 2 ? (
+            {visits.length === 0 ? (
               <div className="card text-center py-12">
-                <p className="text-gray-500">Score trends require at least 2 completed surveys.</p>
+                <p className="text-gray-500">No completed surveys yet.</p>
               </div>
             ) : (
               <div className="space-y-6">
-                {/* PROMIS chart */}
+                {/* PROMIS band chart — works with 1 or more visits */}
                 <div className="card">
-                  <h3 className="font-semibold text-gray-800 mb-1">PROMIS T-Scores Over Time</h3>
-                  <p className="text-xs text-gray-400 mb-4">Population mean = 50. For symptom scales, higher is worse. For Physical Function and Social Roles, higher is better.</p>
-                  <ResponsiveContainer width="100%" height={320}>
-                    <LineChart data={promisChartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                      <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                      <YAxis domain={[20, 80]} tick={{ fontSize: 11 }} />
-                      <Tooltip />
-                      <Legend />
-                      <ReferenceLine y={50} stroke="#aaa" strokeDasharray="4 2" label={{ value: 'Mean=50', fontSize: 10, fill: '#aaa' }} />
-                      {PROMIS_KEYS.map((key, i) => {
-                        const meta   = INSTRUMENT_META[key]
-                        const colors = ['#1F4E79','#2E75B6','#E74C3C','#F39C12','#2ECC71','#9B59B6','#E67E22']
-                        return (
-                          <Line
-                            key={key}
-                            type="monotone"
-                            dataKey={key}
-                            name={meta?.shortName ?? key}
-                            stroke={colors[i]}
-                            strokeWidth={2}
-                            dot={{ r: 4 }}
-                            activeDot={{ r: 6 }}
-                            connectNulls={false}
-                          />
-                        )
-                      })}
-                    </LineChart>
-                  </ResponsiveContainer>
+                  <h3 className="font-semibold text-gray-800 mb-1">PROMIS T-Scores</h3>
+                  <p className="text-xs text-gray-400 mb-4">
+                    T-scores normed to US general population (mean=50, SD=10). Green = Within Normal Limits.
+                    For Physical Function and Social Roles &amp; Activities, higher T = better. For all other domains, higher T = more symptoms.
+                    {visits.length > 3 && ' Showing most recent 3 visits.'}
+                  </p>
+                  <PromisScoreChart visits={promisVisits} />
                 </div>
 
-                {/* Other scales */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {OTHER_KEYS.map(key => {
-                    const data = buildChartData(key)
-                    const meta = INSTRUMENT_META[key]
-                    if (data.length < 2) return null
-                    return (
-                      <div key={key} className="card">
-                        <h3 className="font-semibold text-gray-800 mb-3">{meta?.displayName}</h3>
-                        <ResponsiveContainer width="100%" height={180}>
-                          <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                            <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                            <YAxis domain={[0, meta?.maxScore ?? 'auto']} tick={{ fontSize: 10 }} />
-                            <Tooltip />
-                            <Line type="monotone" dataKey="score" stroke="#1F4E79" strokeWidth={2} dot={{ r: 4 }} />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </div>
-                    )
-                  })}
-                </div>
+                {/* Other scales — require 2 visits for a trend line */}
+                {visits.length >= 2 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {OTHER_KEYS.map(key => {
+                      const data = buildChartData(key)
+                      const meta = INSTRUMENT_META[key]
+                      if (data.length < 2) return null
+                      return (
+                        <div key={key} className="card">
+                          <h3 className="font-semibold text-gray-800 mb-3">{meta?.displayName}</h3>
+                          <ResponsiveContainer width="100%" height={180}>
+                            <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                              <YAxis domain={[0, meta?.maxScore ?? 'auto']} tick={{ fontSize: 10 }} />
+                              <Tooltip />
+                              <Line type="monotone" dataKey="score" stroke="#1F4E79" strokeWidth={2} dot={{ r: 4 }} />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </div>

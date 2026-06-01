@@ -65,16 +65,20 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
   // Returns [bgRGB, textRGB] for a PROMIS interpretation label
   function sevColors(interp: string): [number[], number[]] {
     const s = interp.toLowerCase()
-    if (s.includes('normal') || s.includes('minimal') || s.includes('none')) return [[213,245,227],[39,174,96]]
-    if (s.includes('mild'))     return [[254,249,231],[211,84,0]]
-    if (s.includes('moderate')) return [[253,235,208],[186,74,0]]
-    if (s.includes('severe'))   return [[253,237,236],[192,57,43]]
-    return [[245,245,245],[120,120,120]]
+    if (s.includes('normal') || s.includes('minimal') || s.includes('none'))
+      return [[198, 239, 206], [0, 97, 0]]     // green
+    if (s.includes('mild'))
+      return [[255, 235, 156], [124, 77, 8]]    // yellow
+    if (s.includes('moderate'))
+      return [[255, 205, 155], [130, 50, 0]]    // orange
+    if (s.includes('severe'))
+      return [[255, 180, 180], [139, 0, 0]]     // red
+    return [[245, 245, 245], [120, 120, 120]]
   }
 
   const phq9Sev  = (s: number) => s<=4?'None-Minimal':s<=9?'Mild':s<=14?'Moderate':s<=19?'Moderately Severe':'Severe'
   const gad7Sev  = (s: number) => s<=4?'Minimal':s<=9?'Mild':s<=14?'Moderate':'Severe'
-  const tskInterp= (s: number) => s>=37?'Elevated kinesiophobia (>=37)':'Within normal range (<37)'
+  const tskInterp= (_s: number) => 'Higher scores indicate greater fear of pain and re-injury with movement.'
   const pcsInterp= (s: number) => s>=30?'Clinically significant (>=30)':'Below clinical threshold (<30)'
 
   function drawTable(headers: string[], colWidths: number[], dataRows: string[][]) {
@@ -190,8 +194,8 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
       // Domain
       pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5); setClr([30,30,30])
       pdf.text(safe(cfg.label),ML+PAD,y+13)
-      // T-Score (severity colored)
-      setClr(t!=null?txtClr:GRAY)
+      // T-Score (black text, colored bar)
+      setClr([30,30,30])
       pdf.text(fmtT(resp?.t_score),ML+DOM_W+T_W/2,y+13,{align:'center'})
       // Score bar
       const barX=ML+DOM_W+T_W+PAD
@@ -207,10 +211,10 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
       // T=50 reference tick
       const refX=barX+(30/60)*barInnerW
       pdf.setDrawColor(80,80,80); pdf.setLineWidth(0.75); pdf.line(refX,barY-1,refX,barY+barH+1)
-      // Interpretation cell (colored background + text)
+      // Interpretation cell (colored background, black text)
       const intX=ML+DOM_W+T_W+BAR_W
       fillRect(intX,y,INT_W,ROW_H,bgClr)
-      setClr(txtClr); pdf.setFontSize(8)
+      setClr([30,30,30]); pdf.setFontSize(8)
       pdf.text(pdf.splitTextToSize(safe(interp),INT_W-PAD*2),intX+PAD,y+12)
       y+=ROW_H
     })
@@ -229,7 +233,7 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
     const remaining=CW-DOM_W-nVisits*(RAW_W+T_W)
     const INT_W=Math.floor(remaining/nVisits)
     const totalW=DOM_W+nVisits*(RAW_W+T_W+INT_W)
-    const HDR_H=22, SUB_H=18, ROW_H=19, PAD=4
+    const HDR_H=22, SUB_H=18, ROW_H=22, PAD=4
     checkPage(HDR_H+SUB_H+7*ROW_H+4)
     const tblY=y
     fillRect(ML,tblY,totalW,HDR_H,HDRBG)
@@ -248,10 +252,11 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
     fillRect(ML,subY,totalW,SUB_H,HDRBG)
     pdf.setFont('helvetica','bold'); pdf.setFontSize(7.5); setClr(NAVY)
     vx=ML+DOM_W
+    const interpLabel = INT_W < 55 ? 'Interp.' : 'Interpretation'
     visits.forEach(()=>{
       pdf.text('Raw',vx+RAW_W/2,subY+12,{align:'center'})
       pdf.text('T',vx+RAW_W+T_W/2,subY+12,{align:'center'})
-      pdf.text('Interpretation',vx+RAW_W+T_W+INT_W/2,subY+12,{align:'center'})
+      pdf.text(interpLabel,vx+RAW_W+T_W+INT_W/2,subY+12,{align:'center'})
       vx+=RAW_W+T_W+INT_W
     })
     y=subY+SUB_H
@@ -269,12 +274,12 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
         // Raw score (neutral color)
         setClr([30,30,30]); pdf.setFontSize(8)
         pdf.text(fmtI(resp?.raw_score),vx+RAW_W/2,y+13,{align:'center'})
-        // T-Score (severity colored)
-        setClr(t!=null?txtClr:[120,120,120])
+        // T-Score (black text)
+        setClr([30,30,30])
         pdf.text(fmtT(resp?.t_score),vx+RAW_W+T_W/2,y+13,{align:'center'})
-        // Interpretation cell (light background + colored text)
+        // Interpretation cell (colored background, black text)
         fillRect(vx+RAW_W+T_W,y,INT_W,ROW_H,bgClr)
-        setClr(txtClr); pdf.setFontSize(7.5)
+        setClr([30,30,30]); pdf.setFontSize(7.5)
         pdf.text(pdf.splitTextToSize(safe(interp),INT_W-PAD*2),vx+RAW_W+T_W+PAD,y+12)
         pdf.setFontSize(8); vx+=RAW_W+T_W+INT_W
       })
@@ -282,25 +287,198 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
     })
     const tblH=y-tblY
     pdf.setDrawColor(180,180,180); pdf.setLineWidth(0.5); pdf.rect(ML,tblY,totalW,tblH)
-    const vLines=[ML+DOM_W]; let tmpx=ML+DOM_W
-    visits.forEach(()=>{tmpx+=RAW_W;vLines.push(tmpx);tmpx+=T_W;vLines.push(tmpx);tmpx+=INT_W;vLines.push(tmpx)})
-    vLines.forEach(lx=>{if(lx<ML+totalW)pdf.line(lx,tblY,lx,tblY+tblH)})
+    const interVisitLines: number[] = [ML+DOM_W]
+    const subLines: number[] = []
+    let tmpx = ML+DOM_W
+    visits.forEach(()=>{
+      tmpx+=RAW_W; subLines.push(tmpx)
+      tmpx+=T_W;   subLines.push(tmpx)
+      tmpx+=INT_W; interVisitLines.push(tmpx)
+    })
+    interVisitLines.forEach(lx=>{if(lx<ML+totalW)pdf.line(lx,tblY,lx,tblY+tblH)})
+    subLines.forEach(lx=>{if(lx<ML+totalW)pdf.line(lx,tblY+HDR_H,lx,tblY+tblH)})
     pdf.line(ML,tblY+HDR_H,ML+totalW,tblY+HDR_H)
     pdf.line(ML,tblY+HDR_H+SUB_H,ML+totalW,tblY+HDR_H+SUB_H)
     y+=6
   }
   y+=4
 
-  // ── Scale tables helper ──
-  function drawScaleTable(name: string, maxVal: number, scoresArr: number[], interpsArr: string[]) {
-    const HDR_H=22, ROW_H=20, PAD=5
-    checkPage(HDR_H+ROW_H+4)
-    if(nVisits===1){
-      drawTable(['Scale','Score','Maximum','Interpretation'],[110,80,80,242],[[name,String(scoresArr[0]),String(maxVal),safe(interpsArr[0])]])
+  // ── PROMIS band chart ──────────────────────────────────────
+  italicNote(
+    'The chart below plots each domain T-score against published severity cut points. ' +
+    'Green = Within Normal Limits. ' +
+    (nVisits > 1 ? 'Shapes distinguish visit dates (circle = oldest, triangle = most recent).' : '')
+  )
+
+  ;(function drawPromisBandChart() {
+    const LBL2   = 142
+    const AX2X   = ML + LBL2 + 8
+    const AX2W   = CW - LBL2 - 8
+    const T0 = 20, T1_MAX = 80
+    const TICKS2 = [20, 30, 40, 45, 50, 55, 60, 70, 80]
+    const TH2 = 16, RH2 = 18, RG2 = 10
+    const MR = 3.5
+
+    const tx = (t: number) =>
+      AX2X + ((Math.min(T1_MAX, Math.max(T0, t)) - T0) / (T1_MAX - T0)) * AX2W
+
+    // Band colors pre-mixed at ~40% opacity on white (avoids GState requirement)
+    const BC = {
+      wnl:  [171, 235, 199] as number[],
+      mild: [249, 231, 159] as number[],
+      mod:  [250, 216, 160] as number[],
+      sev:  [245, 183, 177] as number[],
+    }
+    // Saturated colors for legend swatches
+    const BCS = {
+      wnl:  [46, 204, 113] as number[],
+      mild: [241, 196,  15] as number[],
+      mod:  [243, 156,  18] as number[],
+      sev:  [231,  76,  60] as number[],
+    }
+
+    const getBands2 = (hib: boolean) => hib
+      ? [{t1:T0,t2:30,c:'sev'},{t1:30,t2:40,c:'mod'},{t1:40,t2:45,c:'mild'},{t1:45,t2:T1_MAX,c:'wnl'}]
+      : [{t1:T0,t2:55,c:'wnl'},{t1:55,t2:60,c:'mild'},{t1:60,t2:70,c:'mod'},{t1:70,t2:T1_MAX,c:'sev'}]
+
+    const vOff = nVisits === 1 ? [0] : nVisits === 2 ? [-3, 3] : [-4, 0, 4]
+    const rowsH = PROMIS_CONFIGS.length * (RH2 + RG2) - RG2
+    const needed = TH2 + rowsH + (nVisits > 1 ? 40 : 24)
+    checkPage(needed)
+
+    const top = y
+
+    // Tick grid + labels
+    pdf.setFont('helvetica','normal'); pdf.setFontSize(7); setClr(GRAY)
+    TICKS2.forEach(t => {
+      const x = tx(t)
+      pdf.text(String(t), x, top + 10, { align: 'center' })
+      pdf.setDrawColor(220, 220, 220); pdf.setLineWidth(0.3)
+      pdf.line(x, top + 13, x, top + TH2 + rowsH)
+    })
+    pdf.setDrawColor(160, 160, 160); pdf.setLineWidth(0.8)
+    pdf.setLineDashPattern([3, 2], 0)
+    pdf.line(tx(50), top + 13, tx(50), top + TH2 + rowsH)
+    pdf.setLineDashPattern([], 0)
+
+    const rowsTop = top + TH2
+
+    PROMIS_CONFIGS.forEach((cfg, i) => {
+      const rowY = rowsTop + i * (RH2 + RG2)
+
+      // Label
+      pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5); setClr([50, 50, 50])
+      pdf.text(safe(cfg.label), ML + LBL2, rowY + RH2 * 0.72, { align: 'right' })
+
+      // Bands
+      getBands2(cfg.hib).forEach(({ t1, t2, c }) => {
+        const clr = BC[c as keyof typeof BC]
+        fillRect(tx(t1), rowY, tx(t2) - tx(t1), RH2, clr)
+      })
+
+      // Markers per visit
+      visits.forEach((visit, vi) => {
+        const resp = visit.responses.find(r => r.instrument?.scoring_config_key === cfg.rawKey)
+        const tVal = resp?.t_score
+        if (tVal == null) return
+
+        const mx = tx(tVal)
+        const oy = rowY + RH2 / 2 + vOff[vi]
+        const fc  = VISIT_COLORS[vi]
+
+        pdf.setFillColor(fc[0], fc[1], fc[2])
+        pdf.setDrawColor(255, 255, 255)
+        pdf.setLineWidth(0.8)
+
+        if (vi === 0) {
+          pdf.circle(mx, oy, MR, 'FD')
+        } else if (vi === 1) {
+          pdf.rect(mx - MR, oy - MR, MR * 2, MR * 2, 'FD')
+        } else {
+          const R = MR * 1.3
+          pdf.triangle(mx, oy - R, mx - R * 0.866, oy + R * 0.5, mx + R * 0.866, oy + R * 0.5, 'FD')
+        }
+
+        // T-score label above the most recent visit marker
+        if (vi === nVisits - 1) {
+          pdf.setFont('helvetica','bold'); pdf.setFontSize(6)
+          setClr([fc[0], fc[1], fc[2]])
+          pdf.text(`T=${tVal.toFixed(1)}`, mx, rowY - 1.5, { align: 'center' })
+        }
+      })
+    })
+
+    // Band legend
+    const legY = rowsTop + rowsH + 5
+    const BLEG = [
+      { c: 'wnl', label: 'Within Normal Limits', w: 112 },
+      { c: 'mild', label: 'Mild',                 w:  42 },
+      { c: 'mod',  label: 'Moderate',             w:  64 },
+      { c: 'sev',  label: 'Severe',               w:  52 },
+    ]
+    pdf.setFont('helvetica','normal'); pdf.setFontSize(7.5); setClr([70, 70, 70])
+    let lx = AX2X
+    BLEG.forEach(({ c, label, w }) => {
+      const clr = BCS[c as keyof typeof BCS]
+      fillRect(lx, legY, 11, 9, clr)
+      setClr([70, 70, 70])
+      pdf.text(label, lx + 14, legY + 7.5)
+      lx += w
+    })
+
+    // Visit legend (only when multiple visits)
+    if (nVisits > 1) {
+      const legY2 = legY + 16
+      lx = AX2X
+      visits.forEach((v, vi) => {
+        const fc = VISIT_COLORS[vi]
+        pdf.setFillColor(fc[0], fc[1], fc[2])
+        pdf.setDrawColor(255, 255, 255); pdf.setLineWidth(0.8)
+        const cy = legY2 + MR + 1
+        if (vi === 0) {
+          pdf.circle(lx + MR, cy, MR, 'FD')
+        } else if (vi === 1) {
+          pdf.rect(lx, cy - MR, MR * 2, MR * 2, 'FD')
+        } else {
+          const R = MR * 1.3
+          pdf.triangle(lx + MR, cy - R, lx + MR - R * 0.866, cy + R * 0.5, lx + MR + R * 0.866, cy + R * 0.5, 'FD')
+        }
+        setClr([70, 70, 70])
+        pdf.text(safe(visitDates[vi]), lx + MR * 2 + 4, legY2 + 8)
+        lx += MR * 2 + 4 + pdf.getStringUnitWidth(visitDates[vi]) * 7.5 / pdf.internal.scaleFactor + 12
+      })
+      y = legY2 + 18
     } else {
-      const SCALE_W=90,MAX_W=44,SCR_W=54
+      y = legY + 18
+    }
+  })()
+
+  y += 4
+
+  // ── Scale tables helper ──
+  // showInterp=false renders a score-only table (no interpretation column, no sub-header)
+  function drawScaleTable(name: string, maxVal: number, scoresArr: number[], interpsArr: string[], showInterp: boolean = true) {
+    const HDR_H=22, PAD=5
+    const SCALE_W=90, MAX_W=44, SCR_W=54
+
+    if(nVisits===1){
+      checkPage(HDR_H+20+4)
+      if(showInterp){
+        drawTable(['Scale','Score','Maximum','Interpretation'],[110,80,80,242],[[name,String(scoresArr[0]),String(maxVal),safe(interpsArr[0])]])
+      } else {
+        drawTable(['Scale','Score','Maximum'],[110,160,242],[[name,String(scoresArr[0]),String(maxVal)]])
+      }
+    } else if(showInterp) {
+      // Multi-visit with interpretation column
       const INT_W=Math.floor((CW-SCALE_W-MAX_W-nVisits*SCR_W)/nVisits)
-      const tW=SCALE_W+MAX_W+nVisits*(SCR_W+INT_W), tblY=y
+      // Compute row height from the longest interpretation text
+      pdf.setFont('helvetica','normal'); pdf.setFontSize(7.5)
+      const maxLines=interpsArr.reduce((mx,interp)=>
+        Math.max(mx,pdf.splitTextToSize(safe(interp),INT_W-PAD*2).length),1)
+      const ROW_H=Math.max(20,maxLines*10+6)
+      const tW=SCALE_W+MAX_W+nVisits*(SCR_W+INT_W)
+      checkPage(HDR_H+18+ROW_H+4)
+      const tblY=y
       fillRect(ML,tblY,tW,HDR_H,HDRBG)
       pdf.setFont('helvetica','bold'); pdf.setFontSize(8.5); setClr(NAVY)
       pdf.text('Scale',ML+PAD,tblY+14); pdf.text('Max',ML+SCALE_W+MAX_W/2,tblY+14,{align:'center'})
@@ -314,8 +492,13 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
       })
       const subY=tblY+HDR_H; fillRect(ML,subY,tW,18,HDRBG)
       pdf.setFont('helvetica','bold'); pdf.setFontSize(7.5); setClr(NAVY)
+      const interpLabel=INT_W<55?'Interp.':'Interpretation'
       vx=ML+SCALE_W+MAX_W
-      visits.forEach(()=>{pdf.text('Score',vx+SCR_W/2,subY+12,{align:'center'});pdf.text('Interpretation',vx+SCR_W+INT_W/2,subY+12,{align:'center'});vx+=SCR_W+INT_W})
+      visits.forEach(()=>{
+        pdf.text('Score',vx+SCR_W/2,subY+12,{align:'center'})
+        pdf.text(interpLabel,vx+SCR_W+INT_W/2,subY+12,{align:'center'})
+        vx+=SCR_W+INT_W
+      })
       y=subY+18
       fillRect(ML,y,tW,ROW_H,WHITE)
       pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5); setClr([30,30,30])
@@ -323,15 +506,51 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
       vx=ML+SCALE_W+MAX_W
       scoresArr.forEach((sc,vi)=>{
         pdf.text(String(sc),vx+SCR_W/2,y+13,{align:'center'})
-        pdf.setFontSize(7.5); pdf.text(pdf.splitTextToSize(safe(interpsArr[vi]),INT_W-PAD*2),vx+SCR_W+PAD,y+12)
+        pdf.setFontSize(7.5)
+        pdf.text(pdf.splitTextToSize(safe(interpsArr[vi]),INT_W-PAD*2),vx+SCR_W+PAD,y+12)
         pdf.setFontSize(8.5); vx+=SCR_W+INT_W
       })
       y+=ROW_H
       const tblH=y-tblY; pdf.setDrawColor(180,180,180); pdf.setLineWidth(0.5); pdf.rect(ML,tblY,tW,tblH)
-      const vls=[ML+SCALE_W,ML+SCALE_W+MAX_W]; let tmpx=ML+SCALE_W+MAX_W
-      visits.forEach(()=>{tmpx+=SCR_W;vls.push(tmpx);tmpx+=INT_W;vls.push(tmpx)})
-      vls.forEach(lx=>{if(lx<ML+tW)pdf.line(lx,tblY,lx,tblY+tblH)})
+      const interVisitLines2: number[]=[ML+SCALE_W,ML+SCALE_W+MAX_W]
+      const subLines2: number[]=[]
+      let tmpx=ML+SCALE_W+MAX_W
+      visits.forEach(()=>{tmpx+=SCR_W;subLines2.push(tmpx);tmpx+=INT_W;interVisitLines2.push(tmpx)})
+      interVisitLines2.forEach(lx=>{if(lx<ML+tW)pdf.line(lx,tblY,lx,tblY+tblH)})
+      subLines2.forEach(lx=>{if(lx<ML+tW)pdf.line(lx,tblY+HDR_H,lx,tblY+tblH)})
       pdf.line(ML,tblY+HDR_H,ML+tW,tblY+HDR_H); pdf.line(ML,tblY+HDR_H+18,ML+tW,tblY+HDR_H+18)
+      y+=6
+    } else {
+      // Multi-visit score-only (no interpretation column, no sub-header)
+      const ROW_H=20
+      const tW=SCALE_W+MAX_W+nVisits*SCR_W
+      checkPage(HDR_H+ROW_H+4)
+      const tblY=y
+      fillRect(ML,tblY,tW,HDR_H,HDRBG)
+      pdf.setFont('helvetica','bold'); pdf.setFontSize(8.5); setClr(NAVY)
+      pdf.text('Scale',ML+PAD,tblY+14); pdf.text('Max',ML+SCALE_W+MAX_W/2,tblY+14,{align:'center'})
+      let vx=ML+SCALE_W+MAX_W
+      visits.forEach((_,vi)=>{
+        const tint=VISIT_COLORS[vi].map(c=>Math.min(255,c+160))
+        fillRect(vx,tblY,SCR_W,HDR_H,tint)
+        pdf.setTextColor(VISIT_COLORS[vi][0],VISIT_COLORS[vi][1],VISIT_COLORS[vi][2])
+        pdf.text(safe(visitDates[vi]),vx+SCR_W/2,tblY+14,{align:'center'}); vx+=SCR_W
+      })
+      y=tblY+HDR_H
+      fillRect(ML,y,tW,ROW_H,WHITE)
+      pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5); setClr([30,30,30])
+      pdf.text(safe(name),ML+PAD,y+13); pdf.text(String(maxVal),ML+SCALE_W+MAX_W/2,y+13,{align:'center'})
+      vx=ML+SCALE_W+MAX_W
+      scoresArr.forEach(sc=>{
+        pdf.text(String(sc),vx+SCR_W/2,y+13,{align:'center'}); vx+=SCR_W
+      })
+      y+=ROW_H
+      const tblH=y-tblY; pdf.setDrawColor(180,180,180); pdf.setLineWidth(0.5); pdf.rect(ML,tblY,tW,tblH)
+      const allVLines: number[]=[ML+SCALE_W,ML+SCALE_W+MAX_W]
+      let tx=ML+SCALE_W+MAX_W
+      visits.forEach(()=>{tx+=SCR_W;allVLines.push(tx)})
+      allVLines.forEach(lx=>{if(lx<ML+tW)pdf.line(lx,tblY,lx,tblY+tblH)})
+      pdf.line(ML,tblY+HDR_H,ML+tW,tblY+HDR_H)
       y+=6
     }
   }
@@ -350,8 +569,8 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
 
   // TSK
   sectionHead('Tampa Scale for Kinesiophobia (TSK-11)')
-  drawScaleTable('TSK-11',44,visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='tsk11');return r?.total_score??0}),visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='tsk11');return tskInterp(r?.total_score??0)}))
-  italicNote('Measures fear of movement and re-injury. Scores >=37 indicate elevated kinesiophobia.')
+  drawScaleTable('TSK-11',44,visits.map(v=>{const r=v.responses.find(r=>r.instrument?.scoring_config_key==='tsk11');return r?.total_score??0}),[],false)
+  italicNote('Higher scores indicate greater fear of pain and re-injury with movement.')
   y+=4
 
   // PCS
