@@ -67,6 +67,7 @@ export default function UsersPage() {
         body: JSON.stringify({
           email: inviteEmail.trim(),
           role: inviteRole,
+          org_name: targetOrgName ?? undefined,
           organization_id: targetOrgId!,
         }),
       })

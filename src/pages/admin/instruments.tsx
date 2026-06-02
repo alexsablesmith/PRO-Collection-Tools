@@ -189,7 +189,9 @@ export default function InstrumentsPage() {
             <h1 className="text-2xl font-bold text-gray-900">Survey Instruments</h1>
             <p className="text-gray-500 text-sm mt-0.5">Manage available survey instruments and create new ones</p>
           </div>
-          <button onClick={() => setShowForm(true)} className="btn-primary text-sm">+ New Instrument</button>
+          {profile?.role === 'app_admin' && (
+            <button onClick={() => setShowForm(true)} className="btn-primary text-sm">+ New Instrument</button>
+          )}
         </div>
 
         {showForm && (

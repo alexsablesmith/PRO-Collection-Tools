@@ -8,8 +8,8 @@ const NAV_ITEMS = [
   { href: '/patients',            label: 'Patients',       roles: ['app_admin','org_admin','clinical_user','read_only'] },
   { href: '/scoring-rules',       label: 'Scoring Rules',  roles: ['app_admin','org_admin','clinical_user','read_only'] },
   { href: '/admin/export',        label: 'Export Data',    roles: ['app_admin','org_admin'] },
-  { href: '/admin/batteries',     label: 'Batteries',      roles: ['app_admin','org_admin'] },
-  { href: '/admin/instruments',   label: 'Instruments',    roles: ['app_admin'] },
+  { href: '/admin/batteries',     label: 'Batteries',      roles: ['app_admin','org_admin','clinical_user'] },
+  { href: '/admin/instruments',   label: 'Instruments',    roles: ['app_admin','org_admin','clinical_user'] },
   { href: '/admin/users',         label: 'Users',          roles: ['app_admin','org_admin'] },
   { href: '/admin/organizations', label: 'Organizations',  roles: ['app_admin'] },
 ]
