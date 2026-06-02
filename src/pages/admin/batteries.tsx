@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import type { Battery, Instrument, SurveyTemplate } from '@/types/database'
 import { format, parseISO } from 'date-fns'
-import { AC_ENABLED } from '@/lib/ac-enabled'
 import InstrumentPreviewModal from '@/components/InstrumentPreviewModal'
 
 // Badge config per instrument type
@@ -149,16 +148,6 @@ export default function BatteriesPage() {
                   onToggle={toggleInstrument}
                   onPreview={inst => setPreview(inst)}
                 />
-
-                {/* PROMIS CAT (gated) */}
-                {AC_ENABLED && catInstruments.length > 0 && (
-                  <InstrumentGroup
-                    label="PROMIS Computerized Adaptive Tests"
-                    items={catInstruments.map(i => ({ id: i.id, name: i.name, sub: i.version ?? '', type: i.type }))}
-                    selected={selected}
-                    onToggle={toggleInstrument}
-                  />
-                )}
 
                 {/* Freeform templates (already linked as instruments + unlinked templates) */}
                 {(freeformInstruments.length > 0 || unlinkedTemplates.length > 0) && (
