@@ -26,6 +26,7 @@ export default function PatientDetailPage() {
   const [activeTab, setActiveTab] = useState<'history'|'charts'>('history')
 
   const canSend   = ['app_admin','org_admin','clinical_user'].includes(profile?.role ?? '')
+  const canReport = ['app_admin','org_admin','clinical_user','read_only'].includes(profile?.role ?? '')
   const canDelete = ['app_admin','org_admin'].includes(profile?.role ?? '')
 
 async function deletePatient() {
@@ -119,9 +120,11 @@ async function deletePatient() {
 
   function severityColor(label: string | null) {
     if (!label) return 'text-gray-500'
-    if (label.toLowerCase().includes('normal') || label.toLowerCase().includes('minimal') || label.toLowerCase().includes('none')) return 'badge-wnl'
-    if (label.toLowerCase().includes('mild')) return 'badge-mild'
-    if (label.toLowerCase().includes('moderate')) return 'badge-mod'
+    const s = label.toLowerCase()
+    if (s.includes('normal') || s.includes('minimal') || s.includes('none') || s.includes('below') || s.includes('improved')) return 'badge-wnl'
+    if (s.includes('mild')) return 'badge-mild'
+    if (s.includes('moderate')) return 'badge-mod'
+    if (s.includes('no change')) return 'text-gray-500'
     return 'badge-sev'
   }
 
@@ -164,7 +167,7 @@ async function deletePatient() {
                   Send Survey
                 </Link>
               )}
-              {canSend && visits.length > 0 && (
+              {canReport && visits.length > 0 && (
                 <Link href={`/patients/${id}/report`} className="btn-secondary text-sm">
                   Generate Report
                 </Link>
