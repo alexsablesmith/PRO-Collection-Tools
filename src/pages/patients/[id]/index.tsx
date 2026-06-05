@@ -301,31 +301,48 @@ async function deletePatient() {
                               <div className="overflow-x-auto">
                                 <table className="w-full text-xs border-collapse">
                                   <thead>
-                                    <tr>
+                                    <tr className="bg-hdrbg">
                                       <th className="text-left py-1.5 pr-3 font-normal text-gray-400 w-1/2"></th>
                                       {matrix.items[0].options.map(opt => (
-                                        <th key={opt.value} className="text-center py-1.5 px-2 font-medium text-gray-500 leading-tight min-w-[52px]">
+                                        <th key={opt.value} className="text-center py-1.5 px-2 font-semibold text-navy-DEFAULT leading-tight min-w-[52px]">
                                           {opt.label}
                                         </th>
                                       ))}
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {matrix.items.map((item, qi) => (
-                                      <tr key={qi} className={qi % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                        <td className="py-2 pr-3 text-gray-700 align-middle">
-                                          <span className="text-gray-400 mr-1">{qi + 1}.</span>{item.text}
-                                        </td>
-                                        {item.options.map(opt => (
-                                          <td key={opt.value} className="text-center py-2 px-2 align-middle">
-                                            {item.selected === opt.value
-                                              ? <span className="text-[#1F4E79] font-bold text-base leading-none">●</span>
-                                              : <span className="text-gray-300 text-base leading-none">○</span>
-                                            }
-                                          </td>
-                                        ))}
-                                      </tr>
-                                    ))}
+                                    {matrix.items.map((item, qi) => {
+                                      const prevOptions = qi > 0 ? matrix.items[qi - 1].options : null
+                                      const optionsChanged = prevOptions !== null &&
+                                        prevOptions.map(o => o.label).join('|') !== item.options.map(o => o.label).join('|')
+                                      return (
+                                        <>
+                                          {optionsChanged && (
+                                            <tr key={`hdr-${qi}`} className="bg-hdrbg">
+                                              <th className="py-1.5 pr-3"></th>
+                                              {item.options.map(opt => (
+                                                <th key={opt.value} className="text-center py-1.5 px-2 font-semibold text-navy-DEFAULT leading-tight min-w-[52px]">
+                                                  {opt.label}
+                                                </th>
+                                              ))}
+                                            </tr>
+                                          )}
+                                          <tr key={qi} className={qi % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                            <td className="py-2 pr-3 text-gray-700 align-middle">
+                                              <span className="text-gray-400 mr-1">{qi + 1}.</span>{item.text}
+                                            </td>
+                                            {item.options.map(opt => (
+                                              <td key={opt.value} className="text-center py-2 px-2 align-middle">
+                                                {item.selected === opt.value
+                                                  ? <span className="text-[#1F4E79] font-bold text-base leading-none">●</span>
+                                                  : <span className="text-gray-300 text-base leading-none">○</span>
+                                                }
+                                              </td>
+                                            ))}
+                                          </tr>
+                                        </>
+                                      )
+                                    })}
                                   </tbody>
                                 </table>
                               </div>

@@ -685,9 +685,31 @@ export async function buildPatientPDF(
         })
         y = hdrY + HDR_H
 
-        // Question rows
+        // Question rows — insert a new blue header row when options change
         pdf.setFont('helvetica','normal'); pdf.setFontSize(8); setClr([30,30,30])
         matrix.items.forEach((item, qi) => {
+          // Insert new header row if options changed since previous item
+          if (qi > 0) {
+            const prevOpts = matrix.items[qi - 1].options.map((o: any) => o.label).join('|')
+            const curOpts  = item.options.map((o: any) => o.label).join('|')
+            if (prevOpts !== curOpts) {
+              checkPage(HDR_H + ROW_H)
+              fillRect(ML, y, totalW, HDR_H, HDRBG)
+              pdf.setFont('helvetica','bold'); pdf.setFontSize(7); setClr(NAVY)
+              let ox2 = ML + Q_COL
+              item.options.forEach((opt: any) => {
+                const lines = pdf.splitTextToSize(safe(opt.label), optW - 2)
+                const lineH = 8
+                const textY = y + (HDR_H - lines.length * lineH) / 2 + lineH - 1
+                lines.forEach((line: string, li: number) => {
+                  pdf.text(line, ox2 + optW / 2, textY + li * lineH, { align: 'center' })
+                })
+                ox2 += optW
+              })
+              y += HDR_H
+            }
+          }
+
           checkPage(ROW_H + 2)
           fillRect(ML, y, totalW, ROW_H, qi % 2 === 0 ? WHITE : ALT)
 
@@ -697,7 +719,7 @@ export async function buildPatientPDF(
           pdf.text(qLines[0], ML + PAD, y + 12)
 
           // Circles
-          item.options.forEach((opt, oi) => {
+          item.options.forEach((opt: any, oi: number) => {
             const cx = ML + Q_COL + oi * optW + optW / 2
             const cy = y + ROW_H / 2
             if (item.selected === opt.value) {
