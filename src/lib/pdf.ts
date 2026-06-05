@@ -6,6 +6,7 @@
 
 import type { Patient, SurveyResponse, SurveyRequest, Instrument } from '@/types/database'
 import { INSTRUMENT_META } from '@/config/scoring'
+import { SURVEY_QUESTIONS } from '@/config/surveyQuestions'
 import { format, parseISO } from 'date-fns'
 
 interface VisitData {
@@ -13,7 +14,11 @@ interface VisitData {
   responses: (SurveyResponse & { instrument: Instrument })[]
 }
 
-export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
+export async function buildPatientPDF(
+  patient: Patient,
+  visits: VisitData[],
+  options?: { includeResponses?: boolean }
+) {
   // Dynamically import jsPDF (browser only)
   const { jsPDF } = await import('jspdf')
 
@@ -597,6 +602,128 @@ export async function buildPatientPDF(patient: Patient, visits: VisitData[]) {
       visits.map(v => { const r = v.responses.find(r => r.instrument?.scoring_config_key === 'gic'); return r?.severity_label ?? 'No Data' })
     )
     italicNote("Score: 1=A lot better, 4=No change, 7=A lot worse. Reflects patient's overall impression of change since starting the functional restoration program.")
+    y += 4
+  }
+
+  // ── Individual response appendix ──────────────────────────────
+  if (options?.includeResponses) {
+    const lang = (patient.preferred_language === 'es' ? 'es' : 'en') as 'en' | 'es'
+    const Q_COL = 210, OPT_BASE = CW - Q_COL
+    const ROW_H = 18, HDR_H = 28, PAD = 4
+    const CIRC_R = 3
+
+    function getMatrix(instrument: Instrument, rawResp: Record<string, number>) {
+      const qDef = (instrument.questions as any)?.[lang]
+        ?? SURVEY_QUESTIONS[instrument.scoring_config_key]?.[lang]
+      if (!qDef) return null
+      return {
+        title:     qDef.title as string,
+        timeframe: (qDef.timeframe ?? null) as string | null,
+        items: (qDef.items as any[]).map(item => ({
+          text:     item.text as string,
+          options:  (item.options ?? qDef.options) as { value: number; label: string }[],
+          selected: rawResp[item.id] ?? null,
+        })),
+      }
+    }
+
+    sectionHead('Individual Question Responses')
+
+    visits.forEach((visit, vi) => {
+      if (nVisits > 1) {
+        checkPage(20)
+        pdf.setFont('helvetica','bold'); pdf.setFontSize(9); setClr(NAVY)
+        pdf.text(safe(`Visit ${vi + 1}: ${visitDates[vi]}`), ML, y); y += 14
+      }
+
+      visit.responses.forEach(resp => {
+        const key = resp.instrument?.scoring_config_key
+        const raw = (resp.raw_responses ?? {}) as Record<string, number>
+
+        // Pain NRS: single-line
+        if (key === 'pain_nrs') {
+          checkPage(24)
+          pdf.setFont('helvetica','bold'); pdf.setFontSize(9); setClr(NAVY)
+          pdf.text('Pain Intensity (NRS)', ML, y); y += 13
+          pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5); setClr([30,30,30])
+          pdf.text(`Reported pain intensity: ${raw['nrs'] ?? '—'} / 10`, ML, y); y += 16
+          return
+        }
+
+        if (!resp.instrument) return
+        const matrix = getMatrix(resp.instrument, raw)
+        if (!matrix) return
+
+        const nOpts = matrix.items[0]?.options.length ?? 0
+        if (nOpts === 0) return
+        const optW = Math.floor(OPT_BASE / nOpts)
+        const totalW = Q_COL + nOpts * optW
+        const needed = HDR_H + (matrix.timeframe ? 12 : 0) + matrix.items.length * ROW_H + 10
+        checkPage(Math.min(needed, 120))
+
+        // Instrument title
+        pdf.setFont('helvetica','bold'); pdf.setFontSize(9); setClr(NAVY)
+        pdf.text(safe(matrix.title), ML, y); y += 12
+        if (matrix.timeframe) {
+          pdf.setFont('helvetica','italic'); pdf.setFontSize(8); setClr(GRAY)
+          pdf.text(safe(matrix.timeframe), ML, y); y += 11
+        }
+
+        // Header row with option labels
+        const hdrY = y
+        fillRect(ML, hdrY, totalW, HDR_H, HDRBG)
+        pdf.setFont('helvetica','bold'); pdf.setFontSize(7); setClr(NAVY)
+        let ox = ML + Q_COL
+        matrix.items[0].options.forEach(opt => {
+          const lines = pdf.splitTextToSize(safe(opt.label), optW - 2)
+          const lineH = 8
+          const textY = hdrY + (HDR_H - lines.length * lineH) / 2 + lineH - 1
+          lines.forEach((line: string, li: number) => {
+            pdf.text(line, ox + optW / 2, textY + li * lineH, { align: 'center' })
+          })
+          ox += optW
+        })
+        y = hdrY + HDR_H
+
+        // Question rows
+        pdf.setFont('helvetica','normal'); pdf.setFontSize(8); setClr([30,30,30])
+        matrix.items.forEach((item, qi) => {
+          checkPage(ROW_H + 2)
+          fillRect(ML, y, totalW, ROW_H, qi % 2 === 0 ? WHITE : ALT)
+
+          // Question text
+          const qLines = pdf.splitTextToSize(`${qi + 1}. ${safe(item.text)}`, Q_COL - PAD * 2)
+          pdf.setFont('helvetica','normal'); pdf.setFontSize(7.5); setClr([30,30,30])
+          pdf.text(qLines[0], ML + PAD, y + 12)
+
+          // Circles
+          item.options.forEach((opt, oi) => {
+            const cx = ML + Q_COL + oi * optW + optW / 2
+            const cy = y + ROW_H / 2
+            if (item.selected === opt.value) {
+              pdf.setFillColor(NAVY[0], NAVY[1], NAVY[2])
+              pdf.setDrawColor(NAVY[0], NAVY[1], NAVY[2])
+              pdf.circle(cx, cy, CIRC_R, 'F')
+            } else {
+              pdf.setDrawColor(180, 180, 180)
+              pdf.circle(cx, cy, CIRC_R, 'S')
+            }
+          })
+          y += ROW_H
+        })
+
+        // Table border + column lines
+        pdf.setDrawColor(180,180,180); pdf.setLineWidth(0.5)
+        pdf.rect(ML, hdrY, totalW, y - hdrY)
+        pdf.line(ML + Q_COL, hdrY, ML + Q_COL, y)
+        for (let oi = 1; oi < nOpts; oi++) {
+          const lx = ML + Q_COL + oi * optW
+          pdf.line(lx, hdrY + HDR_H, lx, y)
+        }
+        pdf.line(ML, hdrY + HDR_H, ML + totalW, hdrY + HDR_H)
+        y += 8
+      })
+    })
     y += 4
   }
 

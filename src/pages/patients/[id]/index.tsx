@@ -8,6 +8,7 @@ import { format, parseISO } from 'date-fns'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import type { Patient, SurveyRequest, SurveyResponse, Instrument } from '@/types/database'
 import { INSTRUMENT_META } from '@/config/scoring'
+import { SURVEY_QUESTIONS } from '@/config/surveyQuestions'
 import PromisScoreChart, { type PromisDomain, type PromisVisit } from '@/components/results/PromisScoreChart'
 
 interface VisitData {
@@ -20,10 +21,11 @@ export default function PatientDetailPage() {
   const { profile } = useAuth()
   const { id }  = router.query as { id: string }
 
-  const [patient,   setPatient]   = useState<Patient | null>(null)
-  const [visits,    setVisits]    = useState<VisitData[]>([])
-  const [loading,   setLoading]   = useState(true)
-  const [activeTab, setActiveTab] = useState<'history'|'charts'>('history')
+  const [patient,         setPatient]         = useState<Patient | null>(null)
+  const [visits,          setVisits]          = useState<VisitData[]>([])
+  const [loading,         setLoading]         = useState(true)
+  const [activeTab,       setActiveTab]       = useState<'history'|'charts'>('history')
+  const [expandedVisitId, setExpandedVisitId] = useState<string | null>(null)
 
   const canSend   = ['app_admin','org_admin','clinical_user'].includes(profile?.role ?? '')
   const canReport = ['app_admin','org_admin','clinical_user','read_only'].includes(profile?.role ?? '')
@@ -128,6 +130,22 @@ async function deletePatient() {
     return 'badge-sev'
   }
 
+  function buildResponseMatrix(instrument: Instrument, rawResponses: Record<string, number>) {
+    const lang = (patient?.preferred_language ?? 'en') as 'en' | 'es'
+    const qDef = (instrument.questions as any)?.[lang]
+      ?? SURVEY_QUESTIONS[instrument.scoring_config_key]?.[lang]
+    if (!qDef) return null
+    return {
+      title:     qDef.title as string,
+      timeframe: (qDef.timeframe ?? null) as string | null,
+      items: (qDef.items as any[]).map(item => ({
+        text:     item.text as string,
+        options:  (item.options ?? qDef.options) as { value: number; label: string }[],
+        selected: rawResponses[item.id] ?? null,
+      })),
+    }
+  }
+
   if (loading) return <div className="p-12 text-center text-gray-400">Loading patient...</div>
   if (!patient) return <div className="p-12 text-center text-gray-500">Patient not found.</div>
 
@@ -223,6 +241,12 @@ async function deletePatient() {
                         </span>
                         <span className="text-gray-400 text-sm ml-2">Visit {visits.length - i}</span>
                       </div>
+                      <button
+                        onClick={() => setExpandedVisitId(v => v === visit.request.id ? null : visit.request.id)}
+                        className="text-xs text-blue-600 hover:underline flex-shrink-0"
+                      >
+                        {expandedVisitId === visit.request.id ? '▲ Hide Responses' : '▼ View Responses'}
+                      </button>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                       {visit.responses.map(r => {
@@ -243,6 +267,73 @@ async function deletePatient() {
                         )
                       })}
                     </div>
+
+                    {/* Expandable individual response matrix */}
+                    {expandedVisitId === visit.request.id && (
+                      <div className="mt-5 space-y-6 border-t border-gray-100 pt-5">
+                        {visit.responses.map(r => {
+                          const key = r.instrument?.scoring_config_key
+                          const raw = r.raw_responses as Record<string, number> | null
+
+                          // Pain NRS: single value, show inline
+                          if (key === 'pain_nrs') {
+                            const val = raw?.['nrs']
+                            return (
+                              <div key={r.id}>
+                                <p className="text-xs font-semibold text-gray-700 mb-1">Pain Intensity (NRS)</p>
+                                <p className="text-sm text-gray-600">
+                                  Reported pain: <strong>{val != null ? `${val} / 10` : '—'}</strong>
+                                </p>
+                              </div>
+                            )
+                          }
+
+                          if (!raw || !r.instrument) return null
+                          const matrix = buildResponseMatrix(r.instrument, raw)
+                          if (!matrix) return null
+
+                          return (
+                            <div key={r.id}>
+                              <p className="text-xs font-semibold text-gray-700">{matrix.title}</p>
+                              {matrix.timeframe && (
+                                <p className="text-xs italic text-gray-400 mb-2">{matrix.timeframe}</p>
+                              )}
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-xs border-collapse">
+                                  <thead>
+                                    <tr>
+                                      <th className="text-left py-1.5 pr-3 font-normal text-gray-400 w-1/2"></th>
+                                      {matrix.items[0].options.map(opt => (
+                                        <th key={opt.value} className="text-center py-1.5 px-2 font-medium text-gray-500 leading-tight min-w-[52px]">
+                                          {opt.label}
+                                        </th>
+                                      ))}
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {matrix.items.map((item, qi) => (
+                                      <tr key={qi} className={qi % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                        <td className="py-2 pr-3 text-gray-700 align-middle">
+                                          <span className="text-gray-400 mr-1">{qi + 1}.</span>{item.text}
+                                        </td>
+                                        {item.options.map(opt => (
+                                          <td key={opt.value} className="text-center py-2 px-2 align-middle">
+                                            {item.selected === opt.value
+                                              ? <span className="text-[#1F4E79] font-bold text-base leading-none">●</span>
+                                              : <span className="text-gray-300 text-base leading-none">○</span>
+                                            }
+                                          </td>
+                                        ))}
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

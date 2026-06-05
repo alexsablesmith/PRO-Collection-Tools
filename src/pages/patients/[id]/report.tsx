@@ -21,12 +21,13 @@ export default function ReportPage() {
   const { profile } = useAuth()
   const { id } = router.query as { id: string }
 
-  const [patient,      setPatient]      = useState<Patient | null>(null)
-  const [visits,       setVisits]       = useState<VisitData[]>([])
-  const [selected,     setSelected]     = useState<string[]>([])
-  const [loading,      setLoading]      = useState(true)
-  const [generating,   setGenerating]   = useState(false)
-  const [warning,      setWarning]      = useState('')
+  const [patient,          setPatient]          = useState<Patient | null>(null)
+  const [visits,           setVisits]           = useState<VisitData[]>([])
+  const [selected,         setSelected]         = useState<string[]>([])
+  const [loading,          setLoading]          = useState(true)
+  const [generating,       setGenerating]       = useState(false)
+  const [warning,          setWarning]          = useState('')
+  const [includeResponses, setIncludeResponses] = useState(false)
 
   useEffect(() => { if (id) loadData() }, [id])
 
@@ -84,7 +85,7 @@ export default function ReportPage() {
     // This reuses the same PDF generation logic from our standalone app
     try {
       const { buildPatientPDF } = await import('@/lib/pdf')
-      buildPatientPDF(patient, selectedVisits)
+      buildPatientPDF(patient, selectedVisits, { includeResponses })
     } catch(e) {
       console.error('PDF generation error:', e)
       alert('Error generating PDF. Please try again.')
@@ -144,6 +145,16 @@ export default function ReportPage() {
           )}
           {warning && <p className="text-xs text-amber-700 mt-2">{warning}</p>}
         </div>
+
+        <label className="flex items-center gap-2 mb-4 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={includeResponses}
+            onChange={e => setIncludeResponses(e.target.checked)}
+            className="rounded"
+          />
+          <span className="text-sm text-gray-700">Include individual question responses</span>
+        </label>
 
         <button
           onClick={generateReport}
