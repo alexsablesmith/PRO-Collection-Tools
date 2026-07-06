@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { getSupabaseAdmin } from '@/lib/supabase'
+import { authenticateRequest, isAuthFailure } from '@/lib/serverAuth'
+import type { Role } from '@/types/database'
 
 const ROLE_LABELS: Record<string, string> = {
   org_admin:     'Org Admin',
@@ -10,6 +11,9 @@ const ROLE_LABELS: Record<string, string> = {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
+  const auth = await authenticateRequest(req, ['app_admin', 'org_admin'])
+  if (isAuthFailure(auth)) return res.status(auth.status).json({ error: auth.error })
+
   const { email, role, organization_id, org_name } = req.body as {
     email: string
     role: string
@@ -19,6 +23,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (!email || !role || !organization_id) {
     return res.status(400).json({ error: 'email, role, and organization_id are required' })
+  }
+
+  // org_admins can only invite into their own organization
+  if (auth.profile.role === 'org_admin' && organization_id !== auth.profile.organization_id) {
+    return res.status(403).json({ error: 'You can only invite users to your own organization' })
   }
 
   const allowedRoles = ['org_admin', 'clinical_user', 'read_only']
@@ -35,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!fromEmail) return res.status(500).json({ error: 'RESEND_FROM_EMAIL is not configured' })
 
   try {
-    const admin = getSupabaseAdmin()
+    const admin = auth.admin
     const redirectTo = `${siteUrl}/account/setup`
 
     // Try invite first; if user already exists, fall back to recovery (password reset)
@@ -68,7 +77,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await admin.from('user_profiles').upsert({
       id: linkData.user.id,
       organization_id,
-      role,
+      role: role as Role,
       full_name: null,
       is_active: false,
     }, { onConflict: 'id' })
@@ -78,7 +87,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const roleLabel = ROLE_LABELS[role] ?? role
     const html = `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px">
-        <h2 style="color:#1F4E79;margin-bottom:8px">You've been invited to MDE Platform</h2>
+        <h2 style="color:#1F4E79;margin-bottom:8px">You've been invited to Prolix Health</h2>
         <p style="color:#555;margin-bottom:4px">You have been added to <strong>${orgDisplay}</strong> as a <strong>${roleLabel}</strong>.</p>
         <p style="color:#555;margin-bottom:32px">Click the button below to set up your account. This link is valid for 24 hours.</p>
         <a href="${linkData.properties.action_link}"
@@ -101,7 +110,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       body: JSON.stringify({
         from: fromEmail,
         to: email,
-        subject: `You've been invited to MDE Platform`,
+        subject: `You've been invited to Prolix Health`,
         html,
       }),
     })

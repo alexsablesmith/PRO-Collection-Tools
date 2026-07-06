@@ -59,12 +59,12 @@ export default function AccountSetupPage() {
 
   return (
     <>
-      <Head><title>Set Up Your Account — MDE Platform</title></Head>
+      <Head><title>Set Up Your Account — Prolix Health</title></Head>
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-gray-900" style={{ color: '#1F4E79' }}>
-              MDE Platform
+              Prolix Health
             </h1>
             <p className="text-gray-500 mt-1">Set up your account to get started</p>
           </div>

@@ -21,7 +21,7 @@ export default function ExportPage() {
     const { data: patients } = await supabase
       .from('patients')
       .select('*')
-      .eq('organization_id', profile?.organization_id)
+      .eq('organization_id', profile?.organization_id ?? '')
       .eq('is_active', true)
 
     if (!patients || patients.length === 0) {
@@ -103,9 +103,9 @@ export default function ExportPage() {
       const csv = XLSX.utils.sheet_to_csv(ws)
       const blob = new Blob([csv], { type: 'text/csv' })
       const url  = URL.createObjectURL(blob)
-      const a = document.createElement('a'); a.href = url; a.download = `MDE_Export_${today}.csv`; a.click()
+      const a = document.createElement('a'); a.href = url; a.download = `Prolix_Export_${today}.csv`; a.click()
     } else {
-      XLSX.writeFile(wb, `MDE_Export_${today}.xlsx`)
+      XLSX.writeFile(wb, `Prolix_Export_${today}.xlsx`)
     }
 
     setStatus(`Done. Exported ${rows.length} survey record${rows.length !== 1 ? 's' : ''}.`)
@@ -114,7 +114,7 @@ export default function ExportPage() {
 
   return (
     <>
-      <Head><title>Export Data — MDE Platform</title></Head>
+      <Head><title>Export Data — Prolix Health</title></Head>
       <div className="max-w-xl">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Export Patient Data</h1>

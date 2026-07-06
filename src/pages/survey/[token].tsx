@@ -1,58 +1,99 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
-import { supabase } from '@/lib/supabase'
-import { scoreInstrument } from '@/config/scoring'
+import type { InstrumentQuestionDef, InstrumentScoringConfig, SurveyProgress } from '@/types/database'
 import { SURVEY_QUESTIONS } from '@/config/surveyQuestions'
-import type { SurveyRequest, Battery, Instrument } from '@/types/database'
+
+// Slimmed instrument shape returned by GET /api/survey/[token]
+interface SurveyInstrument {
+  id:                 string
+  code:               string
+  name:               string
+  type:               string
+  scoring_config_key: string
+  scoring_config:     InstrumentScoringConfig | null
+  questions:          Record<string, InstrumentQuestionDef> | null
+}
+
+interface SurveyPayload {
+  language:           'en' | 'es'
+  demographics_entry: 'clinician' | 'patient'
+  battery_name:       string
+  instruments:        SurveyInstrument[]
+  progress:           SurveyProgress | null
+}
+
+const AUTOSAVE_DELAY_MS = 800
 
 export default function SurveyPage() {
   const router = useRouter()
   const { token } = router.query as { token: string }
 
-  const [request,      setRequest]      = useState<SurveyRequest | null>(null)
-  const [battery,      setBattery]      = useState<Battery | null>(null)
-  const [instruments,  setInstruments]  = useState<Instrument[]>([])
+  const [payload,      setPayload]      = useState<SurveyPayload | null>(null)
   const [loading,      setLoading]      = useState(true)
   const [error,        setError]        = useState('')
   const [step,         setStep]         = useState(0)
   const [demographics, setDemographics] = useState({ first_name: '', last_name: '', date_of_birth: '', gender: '', preferred_language: 'en' })
   const [responses,    setResponses]    = useState<Record<string, Record<string, number>>>({})
   const [submitting,   setSubmitting]   = useState(false)
+  const [submitError,  setSubmitError]  = useState('')
   const [completed,    setCompleted]    = useState(false)
+  const [saveState,    setSaveState]    = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
 
-  const lang = (request?.language ?? 'en') as 'en' | 'es'
+  const loadedRef  = useRef(false)
+  const saveTimer  = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const lang = payload?.language ?? 'en'
+  const instruments = payload?.instruments ?? []
 
   useEffect(() => { if (token) loadSurvey() }, [token])
 
   async function loadSurvey() {
-    const { data: req, error } = await supabase
-      .from('survey_requests')
-      .select('*')
-      .eq('token', token)
-      .in('status', ['pending', 'sent'])
-      .single()
-    if (error || !req) { setError('This survey link is invalid or has already been completed.'); setLoading(false); return }
-    setRequest(req)
-    const [{ data: bat }, { data: insts }] = await Promise.all([
-      supabase.from('batteries').select('*').eq('id', req.battery_id).single(),
-      supabase.from('instruments').select('*').eq('is_active', true),
-    ])
-    setBattery(bat)
-    if (bat && insts) {
-      const ordered = bat.instrument_ids.map(iid => insts.find(i => i.id === iid)).filter(Boolean) as Instrument[]
-      setInstruments(ordered)
+    try {
+      const res = await fetch(`/api/survey/${token}`)
+      const json = await res.json()
+      if (!res.ok) { setError(json.error ?? 'This survey link is invalid.'); setLoading(false); return }
+      const data = json as SurveyPayload
+      setPayload(data)
+      if (data.progress) {
+        setResponses(data.progress.responses ?? {})
+        setStep(data.progress.step ?? 0)
+        if (data.progress.demographics) setDemographics(d => ({ ...d, ...data.progress!.demographics }))
+      }
+      loadedRef.current = true
+    } catch {
+      setError('Unable to load the survey. Please check your connection and try again.')
     }
     setLoading(false)
   }
 
-  const needsDemographics = request?.demographics_entry === 'patient'
+  // Auto-save progress so the patient can close the tab and resume later
+  useEffect(() => {
+    if (!loadedRef.current || completed || submitting) return
+    setSaveState('saving')
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/survey/${token}/progress`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ responses, step, demographics }),
+        })
+        setSaveState(res.ok ? 'saved' : 'error')
+      } catch {
+        setSaveState('error')
+      }
+    }, AUTOSAVE_DELAY_MS)
+    return () => { if (saveTimer.current) clearTimeout(saveTimer.current) }
+  }, [responses, step, demographics]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const needsDemographics = payload?.demographics_entry === 'patient'
   const totalSteps = (needsDemographics ? 1 : 0) + instruments.length
   const currentInstrumentIndex = needsDemographics ? step - 1 : step
   const currentInstrument = instruments[currentInstrumentIndex]
 
-  function getQuestions(inst: Instrument) {
-    return (inst.questions as Record<string, any> | null | undefined)?.[lang]
+  function getQuestions(inst: SurveyInstrument) {
+    return inst.questions?.[lang]
       ?? SURVEY_QUESTIONS[inst.scoring_config_key]?.[lang]
   }
 
@@ -73,39 +114,30 @@ export default function SurveyPage() {
 
   async function handleSubmit() {
     setSubmitting(true)
-    if (needsDemographics && request) {
-      await supabase.from('patients').update({
-        first_name: demographics.first_name,
-        last_name: demographics.last_name,
-        date_of_birth: demographics.date_of_birth,
-        gender: demographics.gender,
-        preferred_language: demographics.preferred_language,
-      }).eq('id', request.patient_id)
+    setSubmitError('')
+    try {
+      const res = await fetch(`/api/survey/${token}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          responses,
+          demographics: needsDemographics ? demographics : null,
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        setSubmitError(json.error ?? (lang === 'es'
+          ? 'No se pudo enviar la encuesta. Por favor intente de nuevo.'
+          : 'Your survey could not be submitted. Please try again.'))
+        setSubmitting(false)
+        return
+      }
+      setCompleted(true)
+    } catch {
+      setSubmitError(lang === 'es'
+        ? 'Error de conexión. Sus respuestas están guardadas — intente enviar de nuevo.'
+        : 'Connection error. Your answers are saved — please try submitting again.')
     }
-    for (const inst of instruments) {
-      const key = inst.scoring_config_key
-      const instResp = responses[key] ?? {}
-      try {
-        const scored = scoreInstrument(key, instResp, inst)
-        await supabase.from('survey_responses').insert({
-          survey_request_id: request!.id,
-          patient_id: request!.patient_id,
-          instrument_id: inst.id,
-          raw_responses: instResp,
-          raw_score: scored.rawScore,
-          t_score: scored.tScore ?? null,
-          standard_error: scored.standardError ?? null,
-          total_score: scored.totalScore ?? null,
-          severity_label: scored.severityLabel,
-          subscale_scores: scored.subscaleScores ?? null,
-        })
-      } catch (e) { console.error('Scoring error for', key, e) }
-    }
-    await supabase.from('survey_requests').update({
-      status: 'completed',
-      completed_at: new Date().toISOString(),
-    }).eq('id', request!.id)
-    setCompleted(true)
     setSubmitting(false)
   }
 
@@ -152,24 +184,30 @@ export default function SurveyPage() {
 
   const progressPct = totalSteps > 0 ? Math.round((step / totalSteps) * 100) : 0
 
+  const saveLabel =
+    saveState === 'saving' ? (lang === 'es' ? 'Guardando…' : 'Saving…')
+    : saveState === 'saved' ? (lang === 'es' ? 'Progreso guardado' : 'Progress saved')
+    : saveState === 'error' ? (lang === 'es' ? 'No se pudo guardar' : 'Could not save')
+    : ''
+
   return (
     <>
       <Head>
-        <title>{lang === 'es' ? 'Encuesta - Evaluacion del Dolor' : 'Survey - Pain Evaluation'}</title>
+        <title>{lang === 'es' ? 'Encuesta - Prolix Health' : 'Survey - Prolix Health'}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <div className="min-h-screen bg-gray-50">
         <div style={{ backgroundColor: '#1F4E79' }} className="text-white px-4 py-4">
           <div className="max-w-2xl mx-auto">
             <h1 className="font-semibold text-sm opacity-80">
-              {lang === 'es' ? 'Evaluacion Multidisciplinaria del Dolor' : 'Multidisciplinary Pain Evaluation'}
+              {lang === 'es' ? 'Prolix Health — Encuesta de Salud' : 'Prolix Health — Health Survey'}
             </h1>
             <div className="mt-2 h-1.5 bg-white/20 rounded-full">
               <div className="h-1.5 bg-white rounded-full transition-all" style={{ width: `${progressPct}%` }} />
             </div>
             <div className="flex justify-between text-xs opacity-60 mt-1">
               <span>{lang === 'es' ? `Paso ${step + 1} de ${totalSteps}` : `Step ${step + 1} of ${totalSteps}`}</span>
-              <span>{progressPct}%</span>
+              <span className={saveState === 'error' ? 'text-red-200 opacity-100' : ''}>{saveLabel || `${progressPct}%`}</span>
             </div>
           </div>
         </div>
@@ -305,6 +343,12 @@ export default function SurveyPage() {
             )
           })()}
 
+          {submitError && (
+            <div className="mt-4 rounded-lg bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm">
+              {submitError}
+            </div>
+          )}
+
           <div className="flex justify-between mt-6">
             {step > 0 ? (
               <button onClick={() => { setStep(s => s - 1); window.scrollTo(0, 0); }} className="btn-secondary">
@@ -332,6 +376,12 @@ export default function SurveyPage() {
               </button>
             )}
           </div>
+
+          <p className="text-center text-xs text-gray-400 mt-6">
+            {lang === 'es'
+              ? 'Su progreso se guarda automáticamente. Puede cerrar esta página y volver más tarde usando el mismo enlace.'
+              : 'Your progress is saved automatically. You can close this page and return later using the same link.'}
+          </p>
         </div>
       </div>
     </>

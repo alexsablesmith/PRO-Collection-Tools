@@ -32,7 +32,7 @@ export default function SendSurveyPage() {
   async function loadData() {
     const [{ data: pat }, { data: bats }] = await Promise.all([
       supabase.from('patients').select('*').eq('id', id).single(),
-      supabase.from('batteries').select('*').eq('organization_id', profile?.organization_id).eq('is_active', true),
+      supabase.from('batteries').select('*').eq('organization_id', profile?.organization_id ?? '').eq('is_active', true),
     ])
     setPatient(pat)
     setBatteries(bats ?? [])
@@ -72,7 +72,7 @@ export default function SendSurveyPage() {
 
   return (
     <>
-      <Head><title>Send Survey — MDE Platform</title></Head>
+      <Head><title>Send Survey — Prolix Health</title></Head>
       <div className="max-w-xl">
         <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-700 text-sm flex items-center gap-1 mb-4">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

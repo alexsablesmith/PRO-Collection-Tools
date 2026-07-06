@@ -22,16 +22,16 @@ export default function LoginPage() {
 
   return (
     <>
-      <Head><title>Sign In — MDE Platform</title></Head>
+      <Head><title>Sign In — Prolix Health</title></Head>
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 px-4">
         <div className="w-full max-w-md">
           {/* Logo / title */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-navy-DEFAULT text-white text-2xl font-bold mb-4">
-              MDE
+              Px
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">Multidisciplinary Pain Evaluation</h1>
-            <p className="text-gray-500 text-sm mt-1">Clinical Survey Platform</p>
+            <h1 className="text-2xl font-bold text-gray-900">Prolix Health</h1>
+            <p className="text-gray-500 text-sm mt-1">Patient-Reported Outcomes Platform</p>
           </div>
 
           {/* Form */}

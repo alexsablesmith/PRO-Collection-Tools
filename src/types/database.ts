@@ -5,13 +5,13 @@ export type DeliveryMethod = 'email' | 'sms' | 'manual'
 export type ReportType = 'single' | 'longitudinal'
 export type DemographicsEntry = 'clinician' | 'patient'
 
-export interface Organization {
+export type Organization = {
   id: string
   name: string
   created_at: string
 }
 
-export interface UserProfile {
+export type UserProfile = {
   id: string
   organization_id: string
   role: Role
@@ -20,7 +20,7 @@ export interface UserProfile {
   created_at: string
 }
 
-export interface Patient {
+export type Patient = {
   id: string
   organization_id: string
   first_name: string
@@ -35,14 +35,14 @@ export interface Patient {
   created_at: string
 }
 
-export interface InstrumentQuestionDef {
+export type InstrumentQuestionDef = {
   title: string
   timeframe?: string
   items: { id: string; text: string; options?: { value: number; label: string }[] }[]
   options: { value: number; label: string }[]
 }
 
-export interface InstrumentScoringConfig {
+export type InstrumentScoringConfig = {
   type: string
   higherIsBetter?: boolean
   maxScore?: number
@@ -51,7 +51,7 @@ export interface InstrumentScoringConfig {
 
 export type InstrumentType = 'standard' | 'promis_cat' | 'promis_fixed' | 'freeform'
 
-export interface Instrument {
+export type Instrument = {
   id: string
   code: string
   name: string
@@ -66,7 +66,7 @@ export interface Instrument {
   scoring_config?: InstrumentScoringConfig | null
 }
 
-export interface Battery {
+export type Battery = {
   id: string
   organization_id: string
   name: string
@@ -76,7 +76,23 @@ export interface Battery {
   created_at: string
 }
 
-export interface SurveyRequest {
+export type SurveyDemographics = {
+  first_name:         string
+  last_name:          string
+  date_of_birth:      string
+  gender:             string
+  preferred_language: string
+}
+
+/** Shape stored in survey_requests.partial_responses for save/resume */
+export type SurveyProgress = {
+  responses:    Record<string, Record<string, number>>
+  step:         number
+  demographics: SurveyDemographics | null
+  saved_at:     string
+}
+
+export type SurveyRequest = {
   id: string
   patient_id: string
   battery_id: string
@@ -89,11 +105,11 @@ export interface SurveyRequest {
   expires_at: string
   status: SurveyStatus
   demographics_entry: DemographicsEntry
-  partial_responses: Record<string, Record<string, number>> | null
+  partial_responses: SurveyProgress | null
   created_at: string
 }
 
-export interface SurveyResponse {
+export type SurveyResponse = {
   id: string
   survey_request_id: string
   patient_id: string
@@ -108,7 +124,7 @@ export interface SurveyResponse {
   completed_at: string
 }
 
-export interface ReportAuditLog {
+export type ReportAuditLog = {
   id: string
   generated_by: string
   patient_id: string
@@ -121,7 +137,7 @@ export interface ReportAuditLog {
 
 export type CatSessionStatus = 'active' | 'finished' | 'error'
 
-export interface CatDomainSession {
+export type CatDomainSession = {
   id:                 string
   survey_request_id:  string
   instrument_id:      string
@@ -136,7 +152,7 @@ export interface CatDomainSession {
   finished_at:        string | null
 }
 
-export interface CatItemResponse {
+export type CatItemResponse = {
   id:                string
   domain_session_id: string
   item_id:           string
@@ -148,7 +164,7 @@ export interface CatItemResponse {
 
 export type SurveyTemplateType = 'promis_fixed' | 'freeform'
 
-export interface SurveyTemplate {
+export type SurveyTemplate = {
   id:              string
   organization_id: string
   created_by:      string | null
@@ -159,7 +175,7 @@ export interface SurveyTemplate {
   created_at:      string
 }
 
-export interface TemplatePromisItem {
+export type TemplatePromisItem = {
   id:               string
   template_id:      string
   position:         number
@@ -171,7 +187,7 @@ export interface TemplatePromisItem {
 
 export type FreeformQuestionType = 'multiple_choice' | 'likert' | 'text'
 
-export interface TemplateFreeformQuestion {
+export type TemplateFreeformQuestion = {
   id:            string
   template_id:   string
   position:      number
@@ -180,34 +196,100 @@ export interface TemplateFreeformQuestion {
   options:       Record<string, unknown> | null
 }
 
+// ── Item bank + clinical events ───────────────────────────────
+
+export type ItemOption = {
+  value:     number
+  label:     string
+  label_es?: string
+}
+
+/**
+ * One question in the master item bank, tagged with ICF domain and body
+ * region metadata. item_key matches the key used in raw_responses so
+ * item-level answers can be joined back to their metadata.
+ */
+export type Item = {
+  id:                    string
+  instrument_code:       string
+  item_key:              string
+  position:              number
+  text_en:               string
+  text_es:               string | null
+  options:               ItemOption[]
+  higher_is_worse:       boolean
+  icf_primary_code:      string | null
+  icf_primary_label:     string | null
+  icf_secondary_code:    string | null
+  icf_secondary_label:   string | null
+  mh_code:               string | null
+  mh_label:              string | null
+  body_region_primary:   string | null
+  body_region_secondary: string | null
+  response_format:       string | null
+  coding_notes:          string | null
+}
+
+export type ClinicalEventType = 'surgery' | 'injury' | 'treatment_start' | 'treatment_end' | 'other'
+
+export type ClinicalEvent = {
+  id:              string
+  patient_id:      string
+  organization_id: string
+  event_type:      ClinicalEventType
+  label:           string
+  event_date:      string
+  notes:           string | null
+  created_by:      string | null
+  created_at:      string
+}
+
 // ── Joined types used in the UI ───────────────────────────────
-export interface PatientWithHistory extends Patient {
+export type PatientWithHistory = Patient & {
   last_survey_date: string | null
   completed_surveys: number
 }
 
-export interface SurveyRequestWithResponses extends SurveyRequest {
+export type SurveyRequestWithResponses = SurveyRequest & {
   responses: SurveyResponse[]
   battery: Battery | null
 }
 
 // Database type for Supabase client
+type Table<T> = { Row: T; Insert: Partial<T>; Update: Partial<T>; Relationships: [] }
+
 export type Database = {
   public: {
     Tables: {
-      organizations:               { Row: Organization;              Insert: Partial<Organization>;              Update: Partial<Organization>              }
-      user_profiles:               { Row: UserProfile;               Insert: Partial<UserProfile>;               Update: Partial<UserProfile>               }
-      patients:                    { Row: Patient;                   Insert: Partial<Patient>;                   Update: Partial<Patient>                   }
-      instruments:                 { Row: Instrument;                Insert: Partial<Instrument>;                Update: Partial<Instrument>                }
-      batteries:                   { Row: Battery;                   Insert: Partial<Battery>;                   Update: Partial<Battery>                   }
-      survey_requests:             { Row: SurveyRequest;             Insert: Partial<SurveyRequest>;             Update: Partial<SurveyRequest>             }
-      survey_responses:            { Row: SurveyResponse;            Insert: Partial<SurveyResponse>;            Update: Partial<SurveyResponse>            }
-      report_audit_log:            { Row: ReportAuditLog;            Insert: Partial<ReportAuditLog>;            Update: Partial<ReportAuditLog>            }
-      cat_domain_sessions:         { Row: CatDomainSession;          Insert: Partial<CatDomainSession>;          Update: Partial<CatDomainSession>          }
-      cat_item_responses:          { Row: CatItemResponse;           Insert: Partial<CatItemResponse>;           Update: Partial<CatItemResponse>           }
-      survey_templates:            { Row: SurveyTemplate;            Insert: Partial<SurveyTemplate>;            Update: Partial<SurveyTemplate>            }
-      template_promis_items:       { Row: TemplatePromisItem;        Insert: Partial<TemplatePromisItem>;        Update: Partial<TemplatePromisItem>        }
-      template_freeform_questions: { Row: TemplateFreeformQuestion;  Insert: Partial<TemplateFreeformQuestion>;  Update: Partial<TemplateFreeformQuestion>  }
+      organizations:               Table<Organization>
+      user_profiles:               Table<UserProfile>
+      patients:                    Table<Patient>
+      instruments:                 Table<Instrument>
+      batteries:                   Table<Battery>
+      survey_requests:             Table<SurveyRequest>
+      survey_responses:            Table<SurveyResponse>
+      report_audit_log:            Table<ReportAuditLog>
+      cat_domain_sessions:         Table<CatDomainSession>
+      cat_item_responses:          Table<CatItemResponse>
+      survey_templates:            Table<SurveyTemplate>
+      template_promis_items:       Table<TemplatePromisItem>
+      template_freeform_questions: Table<TemplateFreeformQuestion>
+      export_audit_log:            Table<Record<string, unknown>>
+      items:                       Table<Item>
+      clinical_events:             Table<ClinicalEvent>
     }
+    Views: Record<string, never>
+    Functions: {
+      submit_survey: {
+        Args:    { p_request_id: string; p_demographics: unknown; p_responses: unknown }
+        Returns: undefined
+      }
+      delete_patient: {
+        Args:    { p_patient_id: string }
+        Returns: undefined
+      }
+    }
+    Enums: Record<string, never>
+    CompositeTypes: Record<string, never>
   }
 }

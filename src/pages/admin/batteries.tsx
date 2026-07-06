@@ -114,7 +114,7 @@ export default function BatteriesPage() {
 
   return (
     <>
-      <Head><title>Batteries — MDE Platform</title></Head>
+      <Head><title>Batteries — Prolix Health</title></Head>
       <div>
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -134,7 +134,7 @@ export default function BatteriesPage() {
             <h2 className="font-semibold text-gray-800 mb-4">Create New Battery</h2>
             <div className="mb-4">
               <label className="label">Battery Name</label>
-              <input className="input" value={newName} onChange={e => setNewName(e.target.value)} placeholder="e.g. Standard MDE Battery" />
+              <input className="input" value={newName} onChange={e => setNewName(e.target.value)} placeholder="e.g. Standard Intake Battery" />
             </div>
             <div className="mb-4">
               <label className="label">Select Instruments &amp; Surveys (in order)</label>

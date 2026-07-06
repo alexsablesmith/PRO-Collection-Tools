@@ -4,9 +4,10 @@
  * The full PDF generation logic is the same as the standalone HTML app.
  */
 
-import type { Patient, SurveyResponse, SurveyRequest, Instrument } from '@/types/database'
+import type { Patient, SurveyResponse, SurveyRequest, Instrument, Item } from '@/types/database'
 import { INSTRUMENT_META } from '@/config/scoring'
 import { SURVEY_QUESTIONS } from '@/config/surveyQuestions'
+import { computeAdlMatrix, impairmentBucket } from '@/lib/adl'
 import { format, parseISO } from 'date-fns'
 
 interface VisitData {
@@ -17,7 +18,7 @@ interface VisitData {
 export async function buildPatientPDF(
   patient: Patient,
   visits: VisitData[],
-  options?: { includeResponses?: boolean }
+  options?: { includeResponses?: boolean; adlItems?: Item[] }
 ) {
   // Dynamically import jsPDF (browser only)
   const { jsPDF } = await import('jspdf')
@@ -125,9 +126,9 @@ export async function buildPatientPDF(
 
   // Title
   pdf.setFont('helvetica','bold'); pdf.setFontSize(17); setClr(NAVY)
-  pdf.text('MULTIDISCIPLINARY PAIN EVALUATION',PW/2,y,{align:'center'}); y+=20
+  pdf.text('PROLIX HEALTH',PW/2,y,{align:'center'}); y+=20
   pdf.setFont('helvetica','normal'); pdf.setFontSize(12); setClr(BLUE)
-  pdf.text('Patient Survey Results Report',PW/2,y,{align:'center'}); y+=20
+  pdf.text('Patient-Reported Outcomes Report',PW/2,y,{align:'center'}); y+=20
 
   // Demographics
   const DC=[110,146,110,146], demoTW=DC.reduce((a,b)=>a+b,0), DEMO_H=20
@@ -592,6 +593,30 @@ export async function buildPatientPDF(
   italicNote('Scores >=30 are clinically significant and associated with greater pain-related disability.')
   y+=10
 
+  // ── Functional & regional instruments (ODI, NDI, DASH, KOOS, …) ──
+  const REGIONAL_KEYS = ['odi','ndi','dash','quickdash','koos','hoos','womac','lefs','faam','haq_di','uw_pain']
+  const regionalPresent = REGIONAL_KEYS.filter(key =>
+    visits.some(v => v.responses.some(r => r.instrument?.scoring_config_key === key)))
+
+  if (regionalPresent.length > 0) {
+    sectionHead('Functional & Regional Instrument Scores')
+    regionalPresent.forEach(key => {
+      const meta = INSTRUMENT_META[key]
+      drawScaleTable(meta?.shortName ?? key, meta?.maxScore ?? 0,
+        visits.map(v => {
+          const r = v.responses.find(r => r.instrument?.scoring_config_key === key)
+          return r?.total_score ?? 'No Data'
+        }),
+        visits.map(v => {
+          const r = v.responses.find(r => r.instrument?.scoring_config_key === key)
+          if (!r) return 'No Data'
+          return r.severity_label || ((meta?.higherIsBetter ? 'Higher = better' : 'Higher = worse'))
+        }))
+    })
+    italicNote('ODI/DASH/QuickDASH: 0-100, higher = greater disability. KOOS/HOOS: 0-100, higher = better. WOMAC: 0-96, higher = worse. LEFS: 0-80, higher = better. FAAM: 0-100%, higher = better. HAQ-DI: 0-3, higher = worse.')
+    y += 4
+  }
+
   // GIC
   const hasGIC = visits.some(v => v.responses.some(r => r.instrument?.scoring_config_key === 'gic'))
   if (hasGIC) {
@@ -605,9 +630,106 @@ export async function buildPatientPDF(
     y += 4
   }
 
+  // ── ADL impact matrix (medical-legal) ─────────────────────────
+  if (options?.adlItems && options.adlItems.length > 0 && visits.length > 0) {
+    const latestVisit = visits[visits.length - 1]
+    const answers: Record<string, number> = {}
+    latestVisit.responses.forEach(r => Object.assign(answers, (r.raw_responses ?? {}) as Record<string, number>))
+    const matrix = computeAdlMatrix(options.adlItems, answers)
+
+    if (matrix.nAnswered > 0) {
+      sectionHead('ADL Impact by Body Region')
+      italicNote(
+        `Based on ${matrix.nAnswered} ICF-tagged item responses from the ${visitDates[visits.length - 1]} visit. ` +
+        'Cells show mean item-level impairment (0% = no reported difficulty, 100% = maximal), grouped into ' +
+        'activity-of-daily-living categories aligned with the AMA Guides (5th ed., Table 1-2). ' +
+        'Items tagged with two body regions contribute to both. n = contributing items.'
+      )
+
+      const BUCKET_BG: Record<string, number[]> = {
+        none:     [198, 239, 206],
+        mild:     [255, 235, 156],
+        moderate: [255, 205, 155],
+        severe:   [255, 180, 180],
+      }
+
+      // Column layout: category label + one column per region + overall
+      const CAT_W = 118
+      const nCols = matrix.regions.length + 1
+      const colW  = Math.max(34, Math.floor((CW - CAT_W) / nCols))
+      const HDR_H2 = 26, ROW_H2 = 22, PAD2 = 4
+      const totalW = CAT_W + nCols * colW
+
+      checkPage(HDR_H2 + matrix.rows.length * ROW_H2 + 8)
+      const tblY = y
+      fillRect(ML, tblY, totalW, HDR_H2, HDRBG)
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(6.5); setClr(NAVY)
+      pdf.text('ADL Category', ML + PAD2, tblY + 16)
+      let hx = ML + CAT_W
+      ;[...matrix.regions, 'Overall'].forEach(region => {
+        const lines = pdf.splitTextToSize(safe(region), colW - 2)
+        lines.slice(0, 2).forEach((line: string, li: number) => {
+          pdf.text(line, hx + colW / 2, tblY + 11 + li * 8, { align: 'center' })
+        })
+        hx += colW
+      })
+      y = tblY + HDR_H2
+
+      matrix.rows.forEach((row, ri) => {
+        checkPage(ROW_H2 + 2)
+        fillRect(ML, y, totalW, ROW_H2, ri % 2 === 0 ? WHITE : ALT)
+        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7.5); setClr([30, 30, 30])
+        const catLines = pdf.splitTextToSize(safe(row.category), CAT_W - PAD2 * 2)
+        pdf.text(catLines[0], ML + PAD2, y + 13)
+
+        let cx = ML + CAT_W
+        ;[...matrix.regions.map(r => row.cells[r]), row.overall].forEach(cell => {
+          if (cell) {
+            fillRect(cx + 1, y + 2, colW - 2, ROW_H2 - 4, BUCKET_BG[impairmentBucket(cell.impairmentPct)])
+            setClr([30, 30, 30]); pdf.setFontSize(7.5)
+            pdf.text(`${cell.impairmentPct}%`, cx + colW / 2, y + 11, { align: 'center' })
+            pdf.setFontSize(5.5); setClr(GRAY)
+            pdf.text(`n=${cell.nItems}`, cx + colW / 2, y + 18, { align: 'center' })
+          } else {
+            setClr([200, 200, 200]); pdf.setFontSize(7.5)
+            pdf.text('-', cx + colW / 2, y + 13, { align: 'center' })
+          }
+          cx += colW
+        })
+        y += ROW_H2
+      })
+
+      const tblH = y - tblY
+      pdf.setDrawColor(180, 180, 180); pdf.setLineWidth(0.5); pdf.rect(ML, tblY, totalW, tblH)
+      pdf.line(ML + CAT_W, tblY, ML + CAT_W, tblY + tblH)
+      pdf.line(ML + totalW - colW, tblY, ML + totalW - colW, tblY + tblH)
+      pdf.line(ML, tblY + HDR_H2, ML + totalW, tblY + HDR_H2)
+      y += 8
+
+      if (matrix.multiRegion.length > 0) {
+        checkPage(20 + matrix.multiRegion.length * 12)
+        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9); setClr(NAVY)
+        pdf.text('Activities affected by multiple body regions', ML, y); y += 12
+        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); setClr([30, 30, 30])
+        matrix.multiRegion.forEach(f => {
+          const line = `${f.label} (${f.code}): ` +
+            f.regions.map(r => `${r.region} ${r.impairmentPct}%`).join(', ')
+          const lines = pdf.splitTextToSize(safe(line), CW - 10)
+          checkPage(lines.length * 11 + 2)
+          pdf.text(lines, ML + 6, y)
+          y += lines.length * 11 + 2
+        })
+        y += 4
+      }
+      y += 4
+    }
+  }
+
   // ── Individual response appendix ──────────────────────────────
   if (options?.includeResponses) {
-    const lang = (patient.preferred_language === 'es' ? 'es' : 'en') as 'en' | 'es'
+    // Reports are always rendered in English, even when the survey was
+    // administered in another language (evaluator-facing requirement).
+    const lang = 'en' as 'en' | 'es'
     const Q_COL = 210, OPT_BASE = CW - Q_COL
     const ROW_H = 18, HDR_H = 28, PAD = 4
     const CIRC_R = 3
@@ -757,5 +879,5 @@ export async function buildPatientPDF(
   pdf.text(pdf.splitTextToSize(safe(disc),CW),ML,y)
 
   const today = format(new Date(),'yyyyMMdd')
-  pdf.save(`Pain_Report_${patient.first_name}_${patient.last_name}_${today}.pdf`)
+  pdf.save(`Prolix_Report_${patient.first_name}_${patient.last_name}_${today}.pdf`)
 }

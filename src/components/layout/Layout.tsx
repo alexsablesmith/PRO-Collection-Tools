@@ -6,10 +6,12 @@ import clsx from 'clsx'
 
 const NAV_ITEMS = [
   { href: '/patients',            label: 'Patients',       roles: ['app_admin','org_admin','clinical_user','read_only'] },
+  { href: '/analytics',           label: 'Analytics',      roles: ['app_admin','org_admin','clinical_user','read_only'] },
   { href: '/scoring-rules',       label: 'Scoring Rules',  roles: ['app_admin','org_admin','clinical_user','read_only'] },
   { href: '/admin/export',        label: 'Export Data',    roles: ['app_admin','org_admin'] },
   { href: '/admin/batteries',     label: 'Batteries',      roles: ['app_admin','org_admin','clinical_user'] },
   { href: '/admin/instruments',   label: 'Instruments',    roles: ['app_admin','org_admin','clinical_user'] },
+  { href: '/admin/item-bank',     label: 'Item Bank',      roles: ['app_admin','org_admin','clinical_user'] },
   { href: '/admin/users',         label: 'Users',          roles: ['app_admin','org_admin'] },
   { href: '/admin/organizations', label: 'Organizations',  roles: ['app_admin'] },
 ]
@@ -25,7 +27,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-8">
               <Link href="/patients" className="text-white font-bold text-lg tracking-tight">
-                MDE Platform
+                Prolix Health
               </Link>
               <nav className="hidden md:flex items-center gap-1">
                 {NAV_ITEMS.map(item => {
@@ -71,7 +73,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       </main>
 
       <footer className="border-t border-gray-100 py-4 text-center text-xs text-gray-400">
-        MDE Clinical Survey Platform — For authorized clinical use only
+        Prolix Health — For authorized clinical use only
       </footer>
     </div>
   )

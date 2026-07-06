@@ -3,7 +3,7 @@ import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import type { UserProfile } from '@/types/database'
+import type { UserProfile, Role } from '@/types/database'
 import { format, parseISO } from 'date-fns'
 
 const ROLE_LABELS: Record<string, string> = {
@@ -48,7 +48,7 @@ export default function UsersPage() {
   }
 
   async function updateRole(userId: string, role: string) {
-    await supabase.from('user_profiles').update({ role }).eq('id', userId)
+    await supabase.from('user_profiles').update({ role: role as Role }).eq('id', userId)
     loadUsers()
   }
 
@@ -61,9 +61,13 @@ export default function UsersPage() {
     if (!inviteEmail.trim()) return
     setSending(true); setInviteMsg(null)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/admin/invite-user', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token ?? ''}`,
+        },
         body: JSON.stringify({
           email: inviteEmail.trim(),
           role: inviteRole,
@@ -87,7 +91,7 @@ export default function UsersPage() {
 
   return (
     <>
-      <Head><title>Users — MDE Platform</title></Head>
+      <Head><title>Users — Prolix Health</title></Head>
       <div>
         <div className="flex items-center justify-between mb-6">
           <div>

@@ -51,7 +51,7 @@ export default function OrganizationsPage() {
 
   return (
     <>
-      <Head><title>Organizations — MDE Platform</title></Head>
+      <Head><title>Organizations — Prolix Health</title></Head>
       <div>
         <div className="flex items-center justify-between mb-6">
           <div>

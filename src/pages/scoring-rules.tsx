@@ -22,7 +22,7 @@ export default function ScoringRulesPage() {
 
   return (
     <>
-      <Head><title>Scoring Rules — MDE Platform</title></Head>
+      <Head><title>Scoring Rules — Prolix Health</title></Head>
       <div>
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Scoring Rules</h1>

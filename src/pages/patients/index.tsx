@@ -23,7 +23,7 @@ async function loadPatients() {
     const { data, error } = await supabase
       .from('patients')
       .select('*, survey_requests(completed_at, status)')
-      .eq('organization_id', profile?.organization_id)
+      .eq('organization_id', profile?.organization_id ?? '')
       .eq('is_active', true)
       .order('last_name', { ascending: true })
     if (!error && data) setPatients((data ?? []).map((p: any) => ({
@@ -49,7 +49,7 @@ async function loadPatients() {
 
   return (
     <>
-      <Head><title>Patients — MDE Platform</title></Head>
+      <Head><title>Patients — Prolix Health</title></Head>
       <div>
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

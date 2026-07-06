@@ -1,5 +1,5 @@
 /**
- * MDE Scoring Configuration
+ * Prolix Health Scoring Configuration
  * ─────────────────────────────────────────────────────────────────────────────
  * This file is the single source of truth for all instrument scoring rules.
  * It is version-controlled in GitHub — every change creates an auditable
@@ -289,6 +289,185 @@ export function scorePCS(responses: Record<string, number>): ScoreResult {
   }
 }
 
+// ── Regional & functional instruments (item bank, July 2026) ─────────────────
+
+const sumValues = (r: Record<string, number>) => Object.values(r).reduce((a, b) => a + b, 0)
+const round1 = (n: number) => Math.round(n * 10) / 10
+
+/** Sum selected keys, treating missing as 0 */
+const sumKeys = (r: Record<string, number>, keys: string[]) =>
+  keys.reduce((s, k) => s + (r[k] ?? 0), 0)
+
+const range = (prefix: string, from: number, to: number) =>
+  Array.from({ length: to - from + 1 }, (_, i) => `${prefix}${from + i}`)
+
+export function scoreODI(responses: Record<string, number>): ScoreResult {
+  // Fairbank & Pynsent 2000. Sections 0–5; skipped sections (e.g. sex life)
+  // reduce the denominator: score = sum / (5 × answered) × 100.
+  const answered = Object.values(responses).filter(v => v !== null && v !== undefined)
+  if (answered.length === 0) throw new Error('No responses provided')
+  const raw = answered.reduce((a, b) => a + b, 0)
+  const pctScore = round1((raw / (answered.length * 5)) * 100)
+  const ODI_BANDS: SeverityBand[] = [
+    { min: 0,  max: 20,  label: 'Minimal disability',  interpretation: 'Can cope with most activities of daily living' },
+    { min: 21, max: 40,  label: 'Moderate disability', interpretation: 'More pain and difficulty with sitting, lifting, and standing' },
+    { min: 41, max: 60,  label: 'Severe disability',   interpretation: 'Pain is a primary problem; ADLs are affected' },
+    { min: 61, max: 80,  label: 'Crippling back pain', interpretation: 'Back pain impinges on all aspects of life' },
+    { min: 81, max: 100, label: 'Bed-bound or exaggerating', interpretation: 'Patient is bed-bound or symptom exaggeration should be considered' },
+  ]
+  const band = findBand(pctScore, ODI_BANDS)
+  return { rawScore: raw, totalScore: pctScore, severityLabel: band.label, interpretation: band.interpretation }
+}
+
+export function scoreNDI(responses: Record<string, number>): ScoreResult {
+  // Vernon & Mior 1991. Raw 0–50.
+  const raw = sumValues(responses)
+  const NDI_BANDS: SeverityBand[] = [
+    { min: 0,  max: 4,  label: 'No disability',       interpretation: 'No significant activity limitation from neck pain' },
+    { min: 5,  max: 14, label: 'Mild disability',     interpretation: 'Mild limitation of daily activities' },
+    { min: 15, max: 24, label: 'Moderate disability', interpretation: 'Moderate limitation of daily activities' },
+    { min: 25, max: 34, label: 'Severe disability',   interpretation: 'Severe limitation of daily activities' },
+    { min: 35, max: 50, label: 'Complete disability', interpretation: 'Complete activity limitation from neck pain' },
+  ]
+  const band = findBand(raw, NDI_BANDS)
+  return { rawScore: raw, totalScore: raw, severityLabel: band.label, interpretation: band.interpretation }
+}
+
+function scoreDashLike(responses: Record<string, number>, nItems: number): ScoreResult {
+  // IWH scoring: ((mean of items) − 1) × 25 → 0 (no disability) to 100.
+  const values = Object.values(responses)
+  if (values.length === 0) throw new Error('No responses provided')
+  const raw = values.reduce((a, b) => a + b, 0)
+  const score = round1(((raw / values.length) - 1) * 25)
+  return {
+    rawScore: raw,
+    totalScore: score,
+    severityLabel: '',
+    interpretation: `0 = no disability, 100 = most severe disability (${values.length}/${nItems} items answered)`,
+  }
+}
+
+export const scoreDASH      = (r: Record<string, number>) => scoreDashLike(r, 30)
+export const scoreQuickDASH = (r: Record<string, number>) => scoreDashLike(r, 11)
+
+/** KOOS/HOOS subscale: 100 − mean(items 0–4) × 25 → 0 (worst) to 100 (best) */
+function koosSubscale(responses: Record<string, number>, keys: string[]): number {
+  const vals = keys.map(k => responses[k]).filter(v => v !== null && v !== undefined)
+  if (vals.length === 0) return NaN
+  return round1(100 - (vals.reduce((a, b) => a + b, 0) / vals.length) * 25)
+}
+
+function scoreKoosLike(
+  responses: Record<string, number>,
+  prefix: string,
+  ranges: Record<string, [number, number]>
+): ScoreResult {
+  const subscaleScores: Record<string, number> = {}
+  for (const [name, [from, to]] of Object.entries(ranges)) {
+    const s = koosSubscale(responses, range(`${prefix}_`, from, to))
+    if (!isNaN(s)) subscaleScores[name] = s
+  }
+  const raw = sumValues(responses)
+  const subs = Object.values(subscaleScores)
+  const total = subs.length ? round1(subs.reduce((a, b) => a + b, 0) / subs.length) : 0
+  return {
+    rawScore: raw,
+    totalScore: total,
+    severityLabel: '',
+    interpretation: 'Subscales 0 (extreme problems) to 100 (no problems); total is the mean of subscales',
+    subscaleScores,
+  }
+}
+
+// Subscale ranges follow the item order in the PROM database spreadsheet
+export const scoreKOOS = (r: Record<string, number>) => scoreKoosLike(r, 'koos', {
+  symptoms: [1, 7], pain: [8, 16], adl: [17, 33], sport_rec: [34, 38], qol: [39, 42],
+})
+export const scoreHOOS = (r: Record<string, number>) => scoreKoosLike(r, 'hoos', {
+  symptoms: [1, 7], pain: [8, 15], adl: [16, 32], sport_rec: [33, 36], qol: [37, 40],
+})
+
+export function scoreWOMAC(responses: Record<string, number>): ScoreResult {
+  // Bellamy 1988. Items 0–4; total 0–96, higher = worse.
+  const raw = sumValues(responses)
+  return {
+    rawScore: raw,
+    totalScore: raw,
+    severityLabel: '',
+    interpretation: '0 (no symptoms) to 96 (most severe)',
+    subscaleScores: {
+      pain:      sumKeys(responses, range('womac_', 1, 5)),
+      stiffness: sumKeys(responses, range('womac_', 6, 7)),
+      function:  sumKeys(responses, range('womac_', 8, 24)),
+    },
+  }
+}
+
+export function scoreLEFS(responses: Record<string, number>): ScoreResult {
+  // Binkley 1999. Sum 0–80, higher = better function. MCID = 9 points.
+  const raw = sumValues(responses)
+  const pct = round1((raw / 80) * 100)
+  return {
+    rawScore: raw,
+    totalScore: raw,
+    severityLabel: '',
+    interpretation: `${pct}% of maximal function (80 = no limitation; MCID 9 points)`,
+  }
+}
+
+export function scoreFAAM(responses: Record<string, number>): ScoreResult {
+  // Martin 2005. ADL items 1–21 (/84), Sports items 22–29 (/32), each as %.
+  const adlKeys   = range('faam_', 1, 21).filter(k => responses[k] !== undefined)
+  const sportKeys = range('faam_', 22, 29).filter(k => responses[k] !== undefined)
+  const adlPct   = adlKeys.length   ? round1((sumKeys(responses, adlKeys)   / (adlKeys.length * 4))   * 100) : NaN
+  const sportPct = sportKeys.length ? round1((sumKeys(responses, sportKeys) / (sportKeys.length * 4)) * 100) : NaN
+  return {
+    rawScore: sumValues(responses),
+    totalScore: isNaN(adlPct) ? 0 : adlPct,
+    severityLabel: '',
+    interpretation: '100% = full function; ADL subscale is the primary score',
+    subscaleScores: {
+      ...(isNaN(adlPct)   ? {} : { adl: adlPct }),
+      ...(isNaN(sportPct) ? {} : { sports: sportPct }),
+    },
+  }
+}
+
+export function scoreHAQDI(responses: Record<string, number>): ScoreResult {
+  // Fries 1980. Highest score in each of 8 categories, averaged → 0–3.
+  const CATEGORIES: [string, string[]][] = [
+    ['Dressing & grooming', range('haq_di_', 1, 2)],
+    ['Arising',             range('haq_di_', 3, 4)],
+    ['Eating',              range('haq_di_', 5, 7)],
+    ['Walking',             range('haq_di_', 8, 9)],
+    ['Hygiene',             range('haq_di_', 10, 12)],
+    ['Reach',               range('haq_di_', 13, 14)],
+    ['Grip',                range('haq_di_', 15, 17)],
+    ['Common activities',   range('haq_di_', 18, 20)],
+  ]
+  const maxima = CATEGORIES.map(([, keys]) =>
+    Math.max(...keys.map(k => responses[k] ?? 0)))
+  const score = Math.round((maxima.reduce((a, b) => a + b, 0) / CATEGORIES.length) * 100) / 100
+  const label = score <= 1 ? 'Mild difficulty' : score <= 2 ? 'Moderate difficulty' : 'Severe difficulty'
+  return {
+    rawScore: sumValues(responses),
+    totalScore: score,
+    severityLabel: label,
+    interpretation: 'Mean of highest score per category: 0 (no difficulty) to 3 (unable)',
+  }
+}
+
+export function scoreUWPain(responses: Record<string, number>): ScoreResult {
+  // Sum 0–24, higher = more pain-related concern.
+  const raw = sumValues(responses)
+  return {
+    rawScore: raw,
+    totalScore: raw,
+    severityLabel: '',
+    interpretation: '0 (no pain-related concerns) to 24 (extreme concerns)',
+  }
+}
+
 // ── Main scoring dispatcher ───────────────────────────────────────────────────
 
 export const SCORING_FUNCTIONS: Record<string, (r: Record<string, number>) => ScoreResult> = {
@@ -305,6 +484,17 @@ export const SCORING_FUNCTIONS: Record<string, (r: Record<string, number>) => Sc
   gad7:                           scoreGAD7,
   tsk11:                          scoreTSK11,
   pcs:                            scorePCS,
+  odi:                            scoreODI,
+  ndi:                            scoreNDI,
+  dash:                           scoreDASH,
+  quickdash:                      scoreQuickDASH,
+  koos:                           scoreKOOS,
+  hoos:                           scoreHOOS,
+  womac:                          scoreWOMAC,
+  lefs:                           scoreLEFS,
+  faam:                           scoreFAAM,
+  haq_di:                         scoreHAQDI,
+  uw_pain:                        scoreUWPain,
 }
 
 interface DynamicScoringConfig {
@@ -451,5 +641,93 @@ export const INSTRUMENT_META: Record<string, {
     isPromis:       false,
     maxScore:       7,
     citation:       'Patient Global Impression of Change. Single-item scale for overall perceived change since treatment initiation.',
+  },
+  odi: {
+    displayName:    'Oswestry Disability Index (ODI)',
+    shortName:      'ODI',
+    higherIsBetter: false,
+    isPromis:       false,
+    maxScore:       100,
+    citation:       'Fairbank JCT, Pynsent PB. The Oswestry Disability Index. Spine. 2000;25(22):2940-2952.',
+  },
+  ndi: {
+    displayName:    'Neck Disability Index (NDI)',
+    shortName:      'NDI',
+    higherIsBetter: false,
+    isPromis:       false,
+    maxScore:       50,
+    citation:       'Vernon H, Mior S. The Neck Disability Index. J Manipulative Physiol Ther. 1991;14(7):409-415.',
+  },
+  dash: {
+    displayName:    'DASH — Arm, Shoulder and Hand',
+    shortName:      'DASH',
+    higherIsBetter: false,
+    isPromis:       false,
+    maxScore:       100,
+    citation:       'Hudak PL, Amadio PC, Bombardier C. Development of an upper extremity outcome measure: the DASH. Am J Ind Med. 1996;29(6):602-608.',
+  },
+  quickdash: {
+    displayName:    'QuickDASH',
+    shortName:      'QuickDASH',
+    higherIsBetter: false,
+    isPromis:       false,
+    maxScore:       100,
+    citation:       'Beaton DE, Wright JG, Katz JN. Development of the QuickDASH. J Bone Joint Surg Am. 2005;87(5):1038-1046.',
+  },
+  koos: {
+    displayName:    'KOOS — Knee Injury & OA Outcome Score',
+    shortName:      'KOOS',
+    higherIsBetter: true,
+    isPromis:       false,
+    maxScore:       100,
+    citation:       'Roos EM, Roos HP, Lohmander LS, Ekdahl C, Beynnon BD. KOOS — development of a self-administered outcome measure. J Orthop Sports Phys Ther. 1998;28(2):88-96.',
+  },
+  hoos: {
+    displayName:    'HOOS — Hip Disability & OA Outcome Score',
+    shortName:      'HOOS',
+    higherIsBetter: true,
+    isPromis:       false,
+    maxScore:       100,
+    citation:       'Nilsdotter AK, Lohmander LS, Klässbo M, Roos EM. Hip disability and osteoarthritis outcome score (HOOS). BMC Musculoskelet Disord. 2003;4:10.',
+  },
+  womac: {
+    displayName:    'WOMAC Osteoarthritis Index',
+    shortName:      'WOMAC',
+    higherIsBetter: false,
+    isPromis:       false,
+    maxScore:       96,
+    citation:       'Bellamy N, Buchanan WW, Goldsmith CH, Campbell J, Stitt LW. Validation study of WOMAC. J Rheumatol. 1988;15(12):1833-1840.',
+  },
+  lefs: {
+    displayName:    'Lower Extremity Functional Scale (LEFS)',
+    shortName:      'LEFS',
+    higherIsBetter: true,
+    isPromis:       false,
+    maxScore:       80,
+    citation:       'Binkley JM, Stratford PW, Lott SA, Riddle DL. The Lower Extremity Functional Scale. Phys Ther. 1999;79(4):371-383.',
+  },
+  faam: {
+    displayName:    'Foot and Ankle Ability Measure (FAAM)',
+    shortName:      'FAAM',
+    higherIsBetter: true,
+    isPromis:       false,
+    maxScore:       100,
+    citation:       'Martin RL, Irrgang JJ, Burdett RG, Conti SF, Van Swearingen JM. Evidence of validity for the FAAM. Foot Ankle Int. 2005;26(11):968-983.',
+  },
+  haq_di: {
+    displayName:    'Health Assessment Questionnaire (HAQ-DI)',
+    shortName:      'HAQ-DI',
+    higherIsBetter: false,
+    isPromis:       false,
+    maxScore:       3,
+    citation:       'Fries JF, Spitz P, Kraines RG, Holman HR. Measurement of patient outcome in arthritis. Arthritis Rheum. 1980;23(2):137-145.',
+  },
+  uw_pain: {
+    displayName:    'UW Pain-Related Concerns',
+    shortName:      'UW Pain',
+    higherIsBetter: false,
+    isPromis:       false,
+    maxScore:       24,
+    citation:       'University of Washington Pain-Related Concerns scale.',
   },
 }

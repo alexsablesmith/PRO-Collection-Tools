@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { SURVEY_QUESTIONS } from '@/config/surveyQuestions'
 import { INSTRUMENT_META } from '@/config/scoring'
-import type { Instrument, InstrumentScoringConfig } from '@/types/database'
+import type { Instrument, InstrumentScoringConfig, Language } from '@/types/database'
 import InstrumentPreviewModal from '@/components/InstrumentPreviewModal'
 
 interface SeverityBand {
@@ -159,7 +159,7 @@ export default function InstrumentsPage() {
       name: form.name.trim(),
       scoring_config_key: form.code.trim(),
       version: form.version.trim() || null,
-      languages: langs,
+      languages: langs as Language[],
       is_active: true,
       questions,
       scoring_config,
@@ -182,7 +182,7 @@ export default function InstrumentsPage() {
 
   return (
     <>
-      <Head><title>Instruments — MDE Platform</title></Head>
+      <Head><title>Instruments — Prolix Health</title></Head>
       <div>
         <div className="flex items-center justify-between mb-6">
           <div>

@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import Head from 'next/head'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import type { Language } from '@/types/database'
 
 export default function NewPatientPage() {
   const { profile } = useAuth()
@@ -25,8 +26,9 @@ export default function NewPatientPage() {
     setLoading(true)
     const { data, error } = await supabase.from('patients').insert({
       ...form,
-      organization_id: profile!.organization_id,
-      created_by:      profile!.id,
+      preferred_language: form.preferred_language as Language,
+      organization_id:    profile!.organization_id,
+      created_by:         profile!.id,
     }).select().single()
     if (error) { setError(error.message); setLoading(false) }
     else router.push(`/patients/${data.id}`)
@@ -34,7 +36,7 @@ export default function NewPatientPage() {
 
   return (
     <>
-      <Head><title>New Patient — MDE Platform</title></Head>
+      <Head><title>New Patient — Prolix Health</title></Head>
       <div className="max-w-2xl">
         <div className="mb-6">
           <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-700 text-sm flex items-center gap-1 mb-3">
