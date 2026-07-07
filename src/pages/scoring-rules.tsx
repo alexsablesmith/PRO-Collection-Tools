@@ -161,6 +161,60 @@ export default function ScoringRulesPage() {
           )
         })}
 
+        {/* Functional & regional instruments — data-driven from INSTRUMENT_META,
+            so any new instrument added there appears here automatically. */}
+        {(() => {
+          const COVERED = new Set(['phq9', 'gad7', 'tsk11', 'pcs', 'gic'])
+          const NOTES: Record<string, string> = {
+            odi:       'Score = (sum ÷ (5 × sections answered)) × 100. Skipped sections (e.g. sex life) reduce the denominator. Range 0–100%.',
+            ndi:       'Sum of 10 sections, each 0–5. Range 0–50; higher = greater disability.',
+            dash:      'Score = ((mean of answered items) − 1) × 25. At least 27 of 30 items must be answered. Range 0–100.',
+            quickdash: 'Score = ((mean of answered items) − 1) × 25. At least 10 of 11 items must be answered. Range 0–100.',
+            koos:      'Five subscales (Symptoms, Pain, ADL, Sport/Rec, QOL), each 0–100 where 100 = no problems. Reported total is the mean of subscales.',
+            hoos:      'Five subscales (Symptoms, Pain, ADL, Sport/Rec, QOL), each 0–100 where 100 = no problems. Reported total is the mean of subscales.',
+            womac:     'Sum 0–96; subscales Pain (0–20), Stiffness (0–8), Function (0–68). Higher = worse.',
+            lefs:      'Sum of 20 items (0–4 each). Range 0–80; higher = better function. MCID ≈ 9 points.',
+            faam:      'ADL subscale (21 items) and Sports subscale (8 items) each reported as % of maximum. ADL is the primary score.',
+            haq_di:    'Highest score within each of 8 categories, averaged. Range 0–3; higher = greater disability.',
+            uw_pain:   'Sum of 6 items (0–4 each). Range 0–24; higher = greater pain-related concern.',
+            pain_nrs:  'Single 0–10 numeric rating. Mild 0–3, Moderate 4–6, Severe 7–10.',
+          }
+          const regional = instruments.filter(([k]) =>
+            !k.startsWith('promis') && !COVERED.has(k))
+          if (regional.length === 0) return null
+          return (
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold text-gray-800 mb-3">Functional &amp; Regional Instruments</h2>
+              {regional.map(([key, meta]) => {
+                const dbInst = getDbInstrument(key)
+                return (
+                  <div key={key} className="card mb-4">
+                    <div className="flex items-start justify-between mb-1">
+                      <h3 className="text-base font-semibold text-navy-DEFAULT">{meta.displayName}</h3>
+                      {dbInst && (
+                        <button
+                          onClick={() => setPreview(dbInst)}
+                          className="text-xs text-blue-600 hover:underline flex-shrink-0 ml-4"
+                        >
+                          Preview Questions
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-400 mb-2 italic">{meta.citation}</p>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="text-xs bg-gray-100 text-gray-600 rounded px-2 py-1">Max: {meta.maxScore}</span>
+                      <span className={`text-xs rounded px-2 py-1 ${meta.higherIsBetter ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                        {meta.higherIsBetter ? '↑ Higher = Better' : '↑ Higher = Worse'}
+                      </span>
+                    </div>
+                    {NOTES[key] && <p className="text-xs text-amber-700 bg-amber-50 rounded px-2 py-1 mt-2">{NOTES[key]}</p>}
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })()}
+
         {/* Custom instruments from DB */}
         {dbInstruments.filter(i => !INSTRUMENT_META[i.scoring_config_key] && i.scoring_config).length > 0 && (
           <div className="mb-4">
