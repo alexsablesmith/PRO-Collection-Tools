@@ -1272,406 +1272,6 @@ insert into public.items (instrument_code, item_key, position, text_en, options,
     body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
     response_format = excluded.response_format, coding_notes = excluded.coding_notes;
 insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_1', 1, 'How often do you experience hip swelling?', '[{"value": 0, "label": "Never"}, {"value": 1, "label": "Rarely"}, {"value": 2, "label": "Sometimes"}, {"value": 3, "label": "Often"}, {"value": 4, "label": "Always"}]'::jsonb, true, 'd415', 'Maintaining a body position', null, null, null, null, 'Hip', null, '5-point Likert (Never to Always)', 'Symptoms subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_2', 2, 'Do you feel grinding, hear clicking or any other type of noise from your hip?', '[{"value": 0, "label": "Never"}, {"value": 1, "label": "Rarely"}, {"value": 2, "label": "Sometimes"}, {"value": 3, "label": "Often"}, {"value": 4, "label": "Always"}]'::jsonb, true, 'd450', 'Walking', null, null, null, null, 'Hip', null, '5-point Likert (Never to Always)', 'Symptoms subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_3', 3, 'Does your hip catch or hang up when moving?', '[{"value": 0, "label": "Never"}, {"value": 1, "label": "Rarely"}, {"value": 2, "label": "Sometimes"}, {"value": 3, "label": "Often"}, {"value": 4, "label": "Always"}]'::jsonb, true, 'd450', 'Walking', 'd455', 'Moving around', null, null, 'Hip', null, '5-point Likert (Never to Always)', 'Symptoms subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_4', 4, 'Can you straighten your hip fully?', '[{"value": 0, "label": "Always"}, {"value": 1, "label": "Often"}, {"value": 2, "label": "Sometimes"}, {"value": 3, "label": "Rarely"}, {"value": 4, "label": "Never"}]'::jsonb, true, 'd415', 'Maintaining a body position', null, null, null, null, 'Hip', null, '5-point Likert (Always to Never)', 'Symptoms subscale - reverse scored')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_5', 5, 'Can you bend your hip fully?', '[{"value": 0, "label": "Always"}, {"value": 1, "label": "Often"}, {"value": 2, "label": "Sometimes"}, {"value": 3, "label": "Rarely"}, {"value": 4, "label": "Never"}]'::jsonb, true, 'd415', 'Maintaining a body position', null, null, null, null, 'Hip', null, '5-point Likert (Always to Never)', 'Symptoms subscale - reverse scored')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_6', 6, 'How severe is your hip stiffness after first wakening in the morning?', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd410', 'Changing basic body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Stiffness item')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_7', 7, 'How severe is your hip stiffness after sitting, lying or resting later in the day?', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd415', 'Maintaining a body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Stiffness item')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_8', 8, 'How often do you experience hip pain?', '[{"value": 0, "label": "Never"}, {"value": 1, "label": "Monthly"}, {"value": 2, "label": "Weekly"}, {"value": 3, "label": "Daily"}, {"value": 4, "label": "Always"}]'::jsonb, true, 'd450', 'Walking', null, null, null, null, 'Hip', null, '5-point Likert (Never to Always)', 'Pain subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_9', 9, 'Straightening hip fully', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd415', 'Maintaining a body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Pain subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_10', 10, 'Bending hip fully', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd415', 'Maintaining a body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Pain subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_11', 11, 'Walking on flat surface', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd450', 'Walking', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Pain subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_12', 12, 'Going up or down stairs', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd455', 'Moving around', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Pain subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_13', 13, 'At night while in bed', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd415', 'Maintaining a body position', null, null, 'b134', 'Sleep functions', 'Hip', null, '5-point Likert (None to Extreme)', 'Pain subscale; sleep flag')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_14', 14, 'Sitting or lying', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd415', 'Maintaining a body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Pain subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_15', 15, 'Standing upright', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd415', 'Maintaining a body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Pain subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_16', 16, 'Descending stairs', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd455', 'Moving around', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'ADL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_17', 17, 'Ascending stairs', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd455', 'Moving around', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'ADL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_18', 18, 'Rising from sitting', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd410', 'Changing basic body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'ADL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_19', 19, 'Standing', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd415', 'Maintaining a body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'ADL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_20', 20, 'Bending to floor/pick up an object', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd410', 'Changing basic body position', 'd430', 'Lifting and carrying objects', null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'ADL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_21', 21, 'Walking on flat surface', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd450', 'Walking', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'ADL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_22', 22, 'Getting in/out of car', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd470', 'Using transportation', 'd410', 'Changing basic body position', null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'ADL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_23', 23, 'Going shopping', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd620', 'Acquisition of goods and services', 'd450', 'Walking', null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'ADL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_24', 24, 'Putting on socks/stockings', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd540', 'Dressing', 'd410', 'Changing basic body position', null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'ADL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_25', 25, 'Rising from bed', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd410', 'Changing basic body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'ADL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_26', 26, 'Taking off socks/stockings', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd540', 'Dressing', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'ADL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_27', 27, 'Lying in bed (turning over, maintaining hip position)', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd415', 'Maintaining a body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'ADL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_28', 28, 'Getting in/out of bath', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd510', 'Washing oneself', 'd410', 'Changing basic body position', null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'ADL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_29', 29, 'Sitting', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd415', 'Maintaining a body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'ADL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_30', 30, 'Getting on/off toilet', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd530', 'Toileting', 'd410', 'Changing basic body position', null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'ADL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_31', 31, 'Heavy domestic duties', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd640', 'Doing housework', 'd430', 'Lifting and carrying objects', null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'ADL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_32', 32, 'Light domestic duties', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd640', 'Doing housework', 'd630', 'Preparing meals', null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'ADL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_33', 33, 'Squatting', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd410', 'Changing basic body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Sport/Rec subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_34', 34, 'Running', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd455', 'Moving around', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Sport/Rec subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_35', 35, 'Jumping', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd455', 'Moving around', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Sport/Rec subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_36', 36, 'Twisting/pivoting on your hip', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd455', 'Moving around', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Sport/Rec subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_37', 37, 'How often are you aware of your hip problem?', '[{"value": 0, "label": "Never"}, {"value": 1, "label": "Monthly"}, {"value": 2, "label": "Weekly"}, {"value": 3, "label": "Daily"}, {"value": 4, "label": "Constantly"}]'::jsonb, true, 'd920', 'Recreation and leisure', null, null, 'b152', 'Emotional functions', 'Hip', null, '5-point Likert (Never to Constantly)', 'QoL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_38', 38, 'Have you modified your life style to avoid potentially damaging activities to your hip?', '[{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Mildly"}, {"value": 2, "label": "Moderately"}, {"value": 3, "label": "Severely"}, {"value": 4, "label": "Totally"}]'::jsonb, true, 'd920', 'Recreation and leisure', 'd850', 'Remunerative employment', null, null, 'Hip', null, '5-point Likert (Not at all to Totally)', 'QoL subscale')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_39', 39, 'How much are you troubled with lack of confidence in your hip?', '[{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Mildly"}, {"value": 2, "label": "Moderately"}, {"value": 3, "label": "Severely"}, {"value": 4, "label": "Extremely"}]'::jsonb, true, null, null, null, null, 'b152', 'Emotional functions', 'Hip', null, '5-point Likert (Not at all to Extremely)', 'QoL subscale - psychological item')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('hoos', 'hoos_40', 40, 'In general, how much difficulty do you have with your hip?', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd450', 'Walking', 'd455', 'Moving around', null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'QoL subscale - global')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
   values ('faam', 'faam_1', 1, 'Standing', '[{"value": 4, "label": "No difficulty"}, {"value": 3, "label": "Slight difficulty"}, {"value": 2, "label": "Moderate difficulty"}, {"value": 1, "label": "Extreme difficulty"}, {"value": 0, "label": "Unable to do"}]'::jsonb, false, 'd415', 'Maintaining a body position', null, null, null, null, 'Ankle', 'Foot/Toes', '5-point Likert (No difficulty to Unable/Did not do)', 'ADL subscale')
   on conflict (instrument_code, item_key) do update set
     position = excluded.position, text_en = excluded.text_en, options = excluded.options,
@@ -3203,6 +2803,406 @@ insert into public.items (instrument_code, item_key, position, text_en, options,
     response_format = excluded.response_format, coding_notes = excluded.coding_notes;
 insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
   values ('uw_pain', 'uw_pain_6', 6, 'I worry that my pain will interfere with my ability to work', '[{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Slightly"}, {"value": 2, "label": "Moderately"}, {"value": 3, "label": "Quite a bit"}, {"value": 4, "label": "Extremely"}]'::jsonb, true, 'd850', 'Remunerative employment', null, null, 'b152', 'Emotional functions', 'Generalized', null, '5-point Likert (Not at all to Extremely)', 'Straddles functional and MH')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_1', 1, 'Do you feel grinding, hear clicking or any other type of noise from your hip?', '[{"value": 0, "label": "Never"}, {"value": 1, "label": "Rarely"}, {"value": 2, "label": "Sometimes"}, {"value": 3, "label": "Often"}, {"value": 4, "label": "Always"}]'::jsonb, true, null, null, null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_2', 2, 'Do you have difficulties spreading your legs wide apart?', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, null, null, null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_3', 3, 'Do you have difficulties to stride out when walking?', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd450', 'Walking', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_4', 4, 'How severe is your hip stiffness after first wakening in the morning?', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, null, null, null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_5', 5, 'How severe is your hip stiffness after sitting, lying or resting later in the day?', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, null, null, null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_6', 6, 'How often do you have hip pain?', '[{"value": 0, "label": "Never"}, {"value": 1, "label": "Monthly"}, {"value": 2, "label": "Weekly"}, {"value": 3, "label": "Daily"}, {"value": 4, "label": "Always"}]'::jsonb, true, null, null, null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_7', 7, 'Pain when straightening your hip fully', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, null, null, null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_8', 8, 'Pain when bending your hip fully', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, null, null, null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_9', 9, 'Pain when walking on a flat surface', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd450', 'Walking', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_10', 10, 'Pain when going up or down stairs', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd455', 'Moving around', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_11', 11, 'Pain at night while in bed', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd415', 'Maintaining a body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_12', 12, 'Pain when sitting or lying', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd415', 'Maintaining a body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_13', 13, 'Pain when standing upright', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd415', 'Maintaining a body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_14', 14, 'Pain when walking on a hard surface (asphalt, concrete, etc.)', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd450', 'Walking', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_15', 15, 'Pain when walking on an uneven surface', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd450', 'Walking', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_16', 16, 'Descending stairs', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd455', 'Moving around', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_17', 17, 'Ascending stairs', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd455', 'Moving around', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_18', 18, 'Rising from sitting', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd410', 'Changing basic body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_19', 19, 'Standing', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd415', 'Maintaining a body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_20', 20, 'Bending to the floor/picking up an object', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd410', 'Changing basic body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_21', 21, 'Walking on a flat surface', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd450', 'Walking', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_22', 22, 'Getting in/out of a car', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd470', 'Using transportation', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_23', 23, 'Going shopping', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd620', 'Acquisition of goods and services', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_24', 24, 'Putting on socks/stockings', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd540', 'Dressing', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_25', 25, 'Rising from bed', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd410', 'Changing basic body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_26', 26, 'Taking off socks/stockings', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd540', 'Dressing', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_27', 27, 'Lying in bed (turning over, maintaining hip position)', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd415', 'Maintaining a body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_28', 28, 'Getting in/out of bath', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd510', 'Washing oneself', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_29', 29, 'Sitting', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd415', 'Maintaining a body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_30', 30, 'Getting on/off toilet', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd530', 'Toileting', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_31', 31, 'Heavy domestic duties (moving heavy boxes, scrubbing floors, etc.)', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd640', 'Doing housework', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_32', 32, 'Light domestic duties (cooking, dusting, etc.)', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd640', 'Doing housework', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_33', 33, 'Squatting', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd410', 'Changing basic body position', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_34', 34, 'Running', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd455', 'Moving around', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_35', 35, 'Twisting/pivoting on your loaded leg', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd455', 'Moving around', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_36', 36, 'Walking on an uneven surface', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, 'd450', 'Walking', null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_37', 37, 'How often are you aware of your hip problem?', '[{"value": 0, "label": "Never"}, {"value": 1, "label": "Monthly"}, {"value": 2, "label": "Weekly"}, {"value": 3, "label": "Daily"}, {"value": 4, "label": "Constantly"}]'::jsonb, true, null, null, null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_38', 38, 'Have you modified your life style to avoid potentially damaging activities to your hip?', '[{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Mildly"}, {"value": 2, "label": "Moderately"}, {"value": 3, "label": "Severely"}, {"value": 4, "label": "Totally"}]'::jsonb, true, null, null, null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_39', 39, 'How much are you troubled with lack of confidence in your hip?', '[{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Mildly"}, {"value": 2, "label": "Moderately"}, {"value": 3, "label": "Severely"}, {"value": 4, "label": "Extremely"}]'::jsonb, true, null, null, null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('hoos', 'hoos_40', 40, 'In general, how much difficulty do you have with your hip?', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, null, null, null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
   on conflict (instrument_code, item_key) do update set
     position = excluded.position, text_en = excluded.text_en, options = excluded.options,
     higher_is_worse = excluded.higher_is_worse,

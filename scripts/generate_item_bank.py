@@ -71,6 +71,61 @@ def koos_like_options(pos, n_items):
     return LIKERT_NONE_EXTREME                     # pain/ADL/sport + final QOL
 
 
+# ── Official HOOS (Nilsdotter 2003) ──────────────────────────────────────────
+# The PROM spreadsheet's "HOOS" mirrors the KOOS item structure (7 symptom / 8
+# pain items) and is NOT the validated HOOS. These are the real 40 items:
+# Symptoms 5, Pain 10, ADL 17, Sport/Rec 4, QOL 4. All scored 0 (none) to 4
+# (extreme). ICF codes use top-level d-codes so they map to the ADL matrix.
+# (text, options, icf_code, icf_label) — body region is Hip for every item.
+HOOS_OFFICIAL = [
+    # Symptoms (S1-S5)
+    ('Do you feel grinding, hear clicking or any other type of noise from your hip?', LIKERT_NEVER_ALWAYS_F, None, None),
+    ('Do you have difficulties spreading your legs wide apart?',                       LIKERT_NONE_EXTREME,   None, None),
+    ('Do you have difficulties to stride out when walking?',                           LIKERT_NONE_EXTREME,   'd450', 'Walking'),
+    ('How severe is your hip stiffness after first wakening in the morning?',          LIKERT_NONE_EXTREME,   None, None),
+    ('How severe is your hip stiffness after sitting, lying or resting later in the day?', LIKERT_NONE_EXTREME, None, None),
+    # Pain (P1-P10)
+    ('How often do you have hip pain?',                                                LIKERT_PAIN_FREQ,      None, None),
+    ('Pain when straightening your hip fully',                                         LIKERT_NONE_EXTREME,   None, None),
+    ('Pain when bending your hip fully',                                               LIKERT_NONE_EXTREME,   None, None),
+    ('Pain when walking on a flat surface',                                            LIKERT_NONE_EXTREME,   'd450', 'Walking'),
+    ('Pain when going up or down stairs',                                              LIKERT_NONE_EXTREME,   'd455', 'Moving around'),
+    ('Pain at night while in bed',                                                     LIKERT_NONE_EXTREME,   'd415', 'Maintaining a body position'),
+    ('Pain when sitting or lying',                                                     LIKERT_NONE_EXTREME,   'd415', 'Maintaining a body position'),
+    ('Pain when standing upright',                                                     LIKERT_NONE_EXTREME,   'd415', 'Maintaining a body position'),
+    ('Pain when walking on a hard surface (asphalt, concrete, etc.)',                  LIKERT_NONE_EXTREME,   'd450', 'Walking'),
+    ('Pain when walking on an uneven surface',                                         LIKERT_NONE_EXTREME,   'd450', 'Walking'),
+    # Function, daily living (A1-A17)
+    ('Descending stairs',                                                              LIKERT_NONE_EXTREME,   'd455', 'Moving around'),
+    ('Ascending stairs',                                                               LIKERT_NONE_EXTREME,   'd455', 'Moving around'),
+    ('Rising from sitting',                                                            LIKERT_NONE_EXTREME,   'd410', 'Changing basic body position'),
+    ('Standing',                                                                       LIKERT_NONE_EXTREME,   'd415', 'Maintaining a body position'),
+    ('Bending to the floor/picking up an object',                                      LIKERT_NONE_EXTREME,   'd410', 'Changing basic body position'),
+    ('Walking on a flat surface',                                                      LIKERT_NONE_EXTREME,   'd450', 'Walking'),
+    ('Getting in/out of a car',                                                        LIKERT_NONE_EXTREME,   'd470', 'Using transportation'),
+    ('Going shopping',                                                                 LIKERT_NONE_EXTREME,   'd620', 'Acquisition of goods and services'),
+    ('Putting on socks/stockings',                                                     LIKERT_NONE_EXTREME,   'd540', 'Dressing'),
+    ('Rising from bed',                                                                LIKERT_NONE_EXTREME,   'd410', 'Changing basic body position'),
+    ('Taking off socks/stockings',                                                     LIKERT_NONE_EXTREME,   'd540', 'Dressing'),
+    ('Lying in bed (turning over, maintaining hip position)',                          LIKERT_NONE_EXTREME,   'd415', 'Maintaining a body position'),
+    ('Getting in/out of bath',                                                         LIKERT_NONE_EXTREME,   'd510', 'Washing oneself'),
+    ('Sitting',                                                                        LIKERT_NONE_EXTREME,   'd415', 'Maintaining a body position'),
+    ('Getting on/off toilet',                                                          LIKERT_NONE_EXTREME,   'd530', 'Toileting'),
+    ('Heavy domestic duties (moving heavy boxes, scrubbing floors, etc.)',            LIKERT_NONE_EXTREME,   'd640', 'Doing housework'),
+    ('Light domestic duties (cooking, dusting, etc.)',                                 LIKERT_NONE_EXTREME,   'd640', 'Doing housework'),
+    # Sport and recreation (SP1-SP4)
+    ('Squatting',                                                                      LIKERT_NONE_EXTREME,   'd410', 'Changing basic body position'),
+    ('Running',                                                                        LIKERT_NONE_EXTREME,   'd455', 'Moving around'),
+    ('Twisting/pivoting on your loaded leg',                                           LIKERT_NONE_EXTREME,   'd455', 'Moving around'),
+    ('Walking on an uneven surface',                                                   LIKERT_NONE_EXTREME,   'd450', 'Walking'),
+    # Quality of life (Q1-Q4)
+    ('How often are you aware of your hip problem?',                                   LIKERT_AWARE,          None, None),
+    ('Have you modified your life style to avoid potentially damaging activities to your hip?', LIKERT_TOTALLY, None, None),
+    ('How much are you troubled with lack of confidence in your hip?',                 LIKERT_EXTREMELY_04,   None, None),
+    ('In general, how much difficulty do you have with your hip?',                     LIKERT_NONE_EXTREME,   None, None),
+]
+
+
 def dash_options(fmt):
     f = fmt or ''
     if 'Strongly' in f:        return DASH_AGREE
@@ -193,9 +248,10 @@ def main():
                 add('dash', f'dash_{i}', i, text, dash_options(row[7]), row)
             elif inst == 'QuickDASH':
                 add('quickdash', f'quickdash_{i}', i, text, dash_options(row[7]), row)
-            elif inst in ('KOOS', 'HOOS'):
-                code = inst.lower()
-                add(code, f'{code}_{i}', i, text, koos_like_options(i, n), row)
+            elif inst == 'KOOS':
+                add('koos', f'koos_{i}', i, text, koos_like_options(i, n), row)
+            elif inst == 'HOOS':
+                pass  # spreadsheet HOOS is KOOS-structured; official items emitted below
             elif inst == 'WOMAC':
                 add('womac', f'womac_{i}', i, text, LIKERT_NONE_EXTREME, row)
             elif inst == 'FAAM':
@@ -227,6 +283,20 @@ def main():
                             break
             else:
                 raise SystemExit(f'Unmapped instrument: {inst}')
+
+    # Emit the validated HOOS (the spreadsheet's HOOS was skipped above).
+    for i, (text, options, icf_code, icf_label) in enumerate(HOOS_OFFICIAL, start=1):
+        items.append({
+            'instrument_code': 'hoos', 'item_key': f'hoos_{i}', 'position': i,
+            'text_en': text, 'options': options,
+            'higher_is_worse': True,
+            'icf_primary_code': icf_code, 'icf_primary_label': icf_label,
+            'icf_secondary_code': None, 'icf_secondary_label': None,
+            'mh_code': None, 'mh_label': None,
+            'body_region_primary': 'Hip', 'body_region_secondary': None,
+            'response_format': '5-point Likert (None to Extreme)',
+            'coding_notes': 'Official HOOS item (Nilsdotter 2003)',
+        })
 
     # ── items seed SQL ────────────────────────────────────────────
     lines = [

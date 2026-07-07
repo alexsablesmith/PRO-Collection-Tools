@@ -333,10 +333,14 @@ export function scoreNDI(responses: Record<string, number>): ScoreResult {
   return { rawScore: raw, totalScore: raw, severityLabel: band.label, interpretation: band.interpretation }
 }
 
-function scoreDashLike(responses: Record<string, number>, nItems: number): ScoreResult {
+function scoreDashLike(responses: Record<string, number>, nItems: number, minAnswered: number): ScoreResult {
   // IWH scoring: ((mean of items) − 1) × 25 → 0 (no disability) to 100.
-  const values = Object.values(responses)
-  if (values.length === 0) throw new Error('No responses provided')
+  // A score is not valid unless at least minAnswered items are answered
+  // (DASH: 27 of 30; QuickDASH: 10 of 11).
+  const values = Object.values(responses).filter(v => v !== null && v !== undefined)
+  if (values.length < minAnswered) {
+    throw new Error(`At least ${minAnswered} of ${nItems} items must be answered to score (got ${values.length})`)
+  }
   const raw = values.reduce((a, b) => a + b, 0)
   const score = round1(((raw / values.length) - 1) * 25)
   return {
@@ -347,13 +351,17 @@ function scoreDashLike(responses: Record<string, number>, nItems: number): Score
   }
 }
 
-export const scoreDASH      = (r: Record<string, number>) => scoreDashLike(r, 30)
-export const scoreQuickDASH = (r: Record<string, number>) => scoreDashLike(r, 11)
+export const scoreDASH      = (r: Record<string, number>) => scoreDashLike(r, 30, 27)
+export const scoreQuickDASH = (r: Record<string, number>) => scoreDashLike(r, 11, 10)
 
-/** KOOS/HOOS subscale: 100 − mean(items 0–4) × 25 → 0 (worst) to 100 (best) */
+/**
+ * KOOS/HOOS subscale: 100 − mean(items 0–4) × 25 → 0 (worst) to 100 (best).
+ * Per the KOOS/HOOS manual, a subscale is not scored (NaN) when more than
+ * 50% of its items are missing.
+ */
 function koosSubscale(responses: Record<string, number>, keys: string[]): number {
   const vals = keys.map(k => responses[k]).filter(v => v !== null && v !== undefined)
-  if (vals.length === 0) return NaN
+  if (vals.length < keys.length / 2) return NaN
   return round1(100 - (vals.reduce((a, b) => a + b, 0) / vals.length) * 25)
 }
 
@@ -383,8 +391,9 @@ function scoreKoosLike(
 export const scoreKOOS = (r: Record<string, number>) => scoreKoosLike(r, 'koos', {
   symptoms: [1, 7], pain: [8, 16], adl: [17, 33], sport_rec: [34, 38], qol: [39, 42],
 })
+// Official HOOS (Nilsdotter 2003): Symptoms 5, Pain 10, ADL 17, Sport/Rec 4, QOL 4
 export const scoreHOOS = (r: Record<string, number>) => scoreKoosLike(r, 'hoos', {
-  symptoms: [1, 7], pain: [8, 15], adl: [16, 32], sport_rec: [33, 36], qol: [37, 40],
+  symptoms: [1, 5], pain: [6, 15], adl: [16, 32], sport_rec: [33, 36], qol: [37, 40],
 })
 
 export function scoreWOMAC(responses: Record<string, number>): ScoreResult {
