@@ -59,6 +59,10 @@ alter table public.clinical_events enable row level security;
 revoke all on table public.items           from anon;
 revoke all on table public.clinical_events from anon;
 
+-- RLS policies only filter rows; the role still needs the base table grant.
+grant select on public.items to authenticated;
+grant select, insert, delete on public.clinical_events to authenticated;
+
 -- Item bank is global reference data (no PHI): readable by any signed-in user,
 -- writable only via service role (seeds/migrations).
 drop policy if exists items_read on public.items;

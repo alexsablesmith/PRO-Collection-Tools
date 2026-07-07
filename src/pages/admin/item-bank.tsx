@@ -14,6 +14,7 @@ export default function ItemBankPage() {
   const { profile } = useAuth()
   const [items,    setItems]    = useState<Item[]>([])
   const [loading,  setLoading]  = useState(true)
+  const [loadError, setLoadError] = useState('')
   const [search,   setSearch]   = useState('')
   const [fInst,    setFInst]    = useState('')
   const [fIcf,     setFIcf]     = useState('')
@@ -29,12 +30,13 @@ export default function ItemBankPage() {
   useEffect(() => { loadItems() }, [])
 
   async function loadItems() {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('items')
       .select('*')
       .order('instrument_code')
       .order('position')
       .limit(1000)
+    if (error) { setLoadError(error.message); console.error('Failed to load item bank:', error) }
     setItems(data ?? [])
     setLoading(false)
   }
@@ -183,6 +185,10 @@ export default function ItemBankPage() {
 
         {loading ? (
           <div className="text-center py-12 text-gray-400">Loading item bank…</div>
+        ) : loadError ? (
+          <div className="card text-center py-12 text-red-600">
+            Failed to load the item bank: {loadError}
+          </div>
         ) : items.length === 0 ? (
           <div className="card text-center py-12 text-gray-500">
             The item bank is empty. Apply the item bank migrations in <code>supabase/migrations</code> to seed it.
