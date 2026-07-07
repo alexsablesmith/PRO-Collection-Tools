@@ -4,6 +4,12 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import type { Item, InstrumentQuestionDef } from '@/types/database'
 
+/** Instrument code as a display label: acronym in caps, PROMIS domain lowercase (e.g. PROMIS_fatigue_4a_v1) */
+function formatInstrumentCode(code: string): string {
+  if (code.startsWith('promis_')) return 'PROMIS_' + code.slice('promis_'.length)
+  return code.toUpperCase()
+}
+
 /**
  * Item Bank browser: every question in the platform, tagged with ICF domain
  * and body region. Filter, select across instruments, and assemble a custom
@@ -170,7 +176,7 @@ export default function ItemBankPage() {
             <input className="input" placeholder="Search question text…" value={search} onChange={e => setSearch(e.target.value)} />
             <select className="input" value={fInst} onChange={e => setFInst(e.target.value)}>
               <option value="">All instruments</option>
-              {instruments.map(c => <option key={c} value={c}>{c}</option>)}
+              {instruments.map(c => <option key={c} value={c}>{formatInstrumentCode(c)}</option>)}
             </select>
             <select className="input" value={fIcf} onChange={e => setFIcf(e.target.value)}>
               <option value="">All ICF domains</option>
@@ -216,7 +222,7 @@ export default function ItemBankPage() {
                       )}
                       <td className="px-3 py-2 text-gray-800 max-w-md">{it.text_en}</td>
                       <td className="px-3 py-2">
-                        <span className="text-xs font-mono bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">{it.instrument_code}</span>
+                        <span className="text-xs font-mono bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">{formatInstrumentCode(it.instrument_code)}</span>
                       </td>
                       <td className="px-3 py-2 text-xs text-gray-600">
                         {it.icf_primary_code && (

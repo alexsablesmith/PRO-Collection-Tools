@@ -120,14 +120,36 @@ def parse_odi_ndi(text):
     return section.strip(), opts(list(enumerate(statements)))
 
 
+def ascii_safe(s):
+    """Strip characters known to get mangled when this SQL is copy/pasted
+    through a browser clipboard into the Supabase SQL editor (em/en dashes,
+    curly quotes). Everything the app displays should round-trip as plain
+    ASCII through that pipeline."""
+    if not isinstance(s, str):
+        return s
+    return (s.replace('—', '-').replace('–', '-')
+             .replace('‘', "'").replace('’', "'")
+             .replace('“', '"').replace('”', '"'))
+
+
+def clean(obj):
+    """Recursively apply ascii_safe to every string in a JSON-able structure."""
+    if isinstance(obj, dict):
+        return {k: clean(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [clean(v) for v in obj]
+    return ascii_safe(obj)
+
+
 def sql_str(s):
+    s = ascii_safe(s)
     if s is None or s == '':
         return 'null'
     return "'" + str(s).replace("'", "''") + "'"
 
 
 def sql_jsonb(obj):
-    return "'" + json.dumps(obj, ensure_ascii=False).replace("'", "''") + "'::jsonb"
+    return "'" + json.dumps(clean(obj), ensure_ascii=False).replace("'", "''") + "'::jsonb"
 
 
 def main():
@@ -247,13 +269,13 @@ def main():
          'Please select the ONE statement in each section that best describes your condition today.'),
         ('ndi', 'Neck Disability Index (NDI)', 'Neck Disability Index',
          'Please select the ONE statement in each section that best describes your condition today.'),
-        ('dash', 'DASH — Disabilities of the Arm, Shoulder and Hand', 'DASH',
+        ('dash', 'Disabilities of the Arm, Shoulder and Hand (DASH)', 'DASH',
          'Please rate your ability to do the following activities in the last week.'),
         ('quickdash', 'QuickDASH', 'QuickDASH',
          'Please rate your ability to do the following activities in the last week.'),
-        ('koos', 'KOOS — Knee injury and Osteoarthritis Outcome Score', 'KOOS',
+        ('koos', 'Knee Injury and Osteoarthritis Outcome Score (KOOS)', 'KOOS',
          'Answer every question thinking of your knee and your symptoms during the last week.'),
-        ('hoos', 'HOOS — Hip disability and Osteoarthritis Outcome Score', 'HOOS',
+        ('hoos', 'Hip Disability and Osteoarthritis Outcome Score (HOOS)', 'HOOS',
          'Answer every question thinking of your hip and your symptoms during the last week.'),
         ('womac', 'WOMAC Osteoarthritis Index', 'WOMAC',
          'Answer thinking of the affected joint over the last 48 hours.'),

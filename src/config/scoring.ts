@@ -659,7 +659,7 @@ export const INSTRUMENT_META: Record<string, {
     citation:       'Vernon H, Mior S. The Neck Disability Index. J Manipulative Physiol Ther. 1991;14(7):409-415.',
   },
   dash: {
-    displayName:    'DASH — Arm, Shoulder and Hand',
+    displayName:    'Disabilities of the Arm, Shoulder and Hand (DASH)',
     shortName:      'DASH',
     higherIsBetter: false,
     isPromis:       false,
@@ -675,15 +675,15 @@ export const INSTRUMENT_META: Record<string, {
     citation:       'Beaton DE, Wright JG, Katz JN. Development of the QuickDASH. J Bone Joint Surg Am. 2005;87(5):1038-1046.',
   },
   koos: {
-    displayName:    'KOOS — Knee Injury & OA Outcome Score',
+    displayName:    'Knee Injury and Osteoarthritis Outcome Score (KOOS)',
     shortName:      'KOOS',
     higherIsBetter: true,
     isPromis:       false,
     maxScore:       100,
-    citation:       'Roos EM, Roos HP, Lohmander LS, Ekdahl C, Beynnon BD. KOOS — development of a self-administered outcome measure. J Orthop Sports Phys Ther. 1998;28(2):88-96.',
+    citation:       'Roos EM, Roos HP, Lohmander LS, Ekdahl C, Beynnon BD. KOOS: development of a self-administered outcome measure. J Orthop Sports Phys Ther. 1998;28(2):88-96.',
   },
   hoos: {
-    displayName:    'HOOS — Hip Disability & OA Outcome Score',
+    displayName:    'Hip Disability and Osteoarthritis Outcome Score (HOOS)',
     shortName:      'HOOS',
     higherIsBetter: true,
     isPromis:       false,
