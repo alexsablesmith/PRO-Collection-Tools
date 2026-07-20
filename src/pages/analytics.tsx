@@ -54,12 +54,14 @@ export default function AnalyticsPage() {
   const instrumentMap = useMemo(
     () => Object.fromEntries(instruments.map(i => [i.id, i])), [instruments])
 
-  // Instruments that actually have data in this org
+  // Instruments that actually have data in this org (custom surveys are
+  // excluded — they have no composite score to aggregate)
   const availableKeys = useMemo(() => {
     const keys = new Set<string>()
     responses.forEach(r => {
-      const key = instrumentMap[r.instrument_id]?.scoring_config_key
-      if (key && key !== 'gic') keys.add(key)
+      const inst = instrumentMap[r.instrument_id]
+      const key = inst?.scoring_config_key
+      if (key && key !== 'gic' && inst?.scoring_config?.type !== 'none') keys.add(key)
     })
     return Array.from(keys).sort()
   }, [responses, instrumentMap])

@@ -334,13 +334,20 @@ export default function PatientDetailPage() {
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                       {visit.responses.map(r => {
                         const meta = r.instrument ? INSTRUMENT_META[r.instrument.scoring_config_key] : null
+                        const noScore = r.instrument?.scoring_config?.type === 'none'
                         const score = meta?.isPromis ? r.t_score : r.total_score
                         return (
                           <div key={r.id} className="bg-gray-50 rounded-lg p-3">
                             <div className="text-xs text-gray-500 mb-1">{meta?.shortName ?? r.instrument?.name}</div>
-                            <div className="text-lg font-bold text-gray-900">
-                              {score != null ? (meta?.isPromis ? `T=${score.toFixed(1)}` : score) : '—'}
-                            </div>
+                            {noScore ? (
+                              <div className="text-xs text-gray-400 italic mt-1.5">
+                                No composite score — see individual responses
+                              </div>
+                            ) : (
+                              <div className="text-lg font-bold text-gray-900">
+                                {score != null ? (meta?.isPromis ? `T=${score.toFixed(1)}` : score) : '—'}
+                              </div>
+                            )}
                             {r.severity_label && (
                               <span className={`text-xs mt-1 inline-block ${severityColor(r.severity_label)}`}>
                                 {r.severity_label}
@@ -374,6 +381,44 @@ export default function PatientDetailPage() {
                           if (!raw || !r.instrument) return null
                           const matrix = buildResponseMatrix(r.instrument, raw)
                           if (!matrix) return null
+
+                          // Custom surveys mix response scales, so a shared-column
+                          // matrix doesn't fit. Render each question like a paper
+                          // multiple-choice survey: its own options, selected one marked.
+                          if (r.instrument.scoring_config?.type === 'none') {
+                            return (
+                              <div key={r.id}>
+                                <p className="text-xs font-semibold text-gray-700">{matrix.title}</p>
+                                <p className="text-xs italic text-gray-400 mb-3">Custom survey — individual responses (no composite score)</p>
+                                <ol className="space-y-3">
+                                  {matrix.items.map((item, qi) => (
+                                    <li key={qi} className="text-sm">
+                                      <p className="text-gray-800 mb-1.5">
+                                        <span className="text-gray-400 mr-1">{qi + 1}.</span>{item.text}
+                                      </p>
+                                      <div className="flex flex-wrap gap-1.5 pl-5">
+                                        {item.options.map(opt => (
+                                          <span
+                                            key={opt.value}
+                                            className={`text-xs rounded-full px-2.5 py-1 border ${
+                                              item.selected === opt.value
+                                                ? 'bg-navy-DEFAULT text-white border-navy-DEFAULT font-semibold'
+                                                : 'bg-white text-gray-500 border-gray-200'
+                                            }`}
+                                          >
+                                            {opt.label}
+                                          </span>
+                                        ))}
+                                        {item.selected === null && (
+                                          <span className="text-xs italic text-gray-400 py-1">No response</span>
+                                        )}
+                                      </div>
+                                    </li>
+                                  ))}
+                                </ol>
+                              </div>
+                            )
+                          }
 
                           return (
                             <div key={r.id}>

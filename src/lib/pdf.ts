@@ -725,6 +725,63 @@ export async function buildPatientPDF(
     }
   }
 
+  // ── Custom survey responses (no composite score) ──────────────
+  // Custom surveys built from the item bank mix response scales, so their
+  // output is each question with the selected answer — like a completed
+  // paper survey. Always included when present.
+  {
+    const customResponses = visits.map((visit, vi) => ({
+      vi,
+      responses: visit.responses.filter(r => r.instrument?.scoring_config?.type === 'none'),
+    })).filter(v => v.responses.length > 0)
+
+    if (customResponses.length > 0) {
+      sectionHead('Custom Survey Responses')
+      italicNote('These surveys are assembled from individual item-bank questions drawn from multiple '
+        + 'instruments and have no composite score. Each question is shown with the response selected.')
+
+      customResponses.forEach(({ vi, responses }) => {
+        if (nVisits > 1) {
+          checkPage(20)
+          pdf.setFont('helvetica','bold'); pdf.setFontSize(9); setClr(NAVY)
+          pdf.text(safe(`Visit ${vi + 1}: ${visitDates[vi]}`), ML, y); y += 14
+        }
+
+        responses.forEach(resp => {
+          const qDef = (resp.instrument.questions as any)?.['en']
+          if (!qDef) return
+          const raw = (resp.raw_responses ?? {}) as Record<string, number>
+
+          checkPage(30)
+          pdf.setFont('helvetica','bold'); pdf.setFontSize(9.5); setClr(NAVY)
+          pdf.text(safe(qDef.title), ML, y); y += 14
+
+          ;(qDef.items as any[]).forEach((item, qi) => {
+            const opts = (item.options ?? qDef.options ?? []) as { value: number; label: string }[]
+            const sel = raw[item.id]
+            const answer = sel != null ? (opts.find(o => o.value === sel)?.label ?? String(sel)) : null
+
+            const qLines = pdf.splitTextToSize(safe(`${qi + 1}. ${item.text}`), CW - 10)
+            checkPage(qLines.length * 11 + 15)
+            pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5); setClr([30,30,30])
+            pdf.text(qLines, ML + 4, y); y += qLines.length * 11
+
+            if (answer) {
+              pdf.setFont('helvetica','bold'); setClr(NAVY)
+              pdf.text(safe(`Answer: ${answer}`), ML + 18, y)
+            } else {
+              pdf.setFont('helvetica','italic'); setClr(GRAY)
+              pdf.text('No response', ML + 18, y)
+            }
+            y += 14
+          })
+          y += 6
+        })
+      })
+      setClr([0,0,0]); pdf.setFont('helvetica','normal')
+    }
+  }
+
   // ── Individual response appendix ──────────────────────────────
   if (options?.includeResponses) {
     // Reports are always rendered in English, even when the survey was
@@ -773,6 +830,8 @@ export async function buildPatientPDF(
         }
 
         if (!resp.instrument) return
+        // Custom surveys are covered by the dedicated section above
+        if (resp.instrument.scoring_config?.type === 'none') return
         const matrix = getMatrix(resp.instrument, raw)
         if (!matrix) return
 

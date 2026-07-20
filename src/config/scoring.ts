@@ -529,6 +529,15 @@ export function scoreInstrument(
   responses: Record<string, number>,
   instrument?: { scoring_config?: DynamicScoringConfig | null }
 ): ScoreResult {
+  // Custom surveys mix items from differently-scored instruments, so no
+  // composite score exists — only the item-level responses are stored.
+  if (instrument?.scoring_config?.type === 'none') {
+    return {
+      rawScore:       Object.keys(responses).length,
+      severityLabel:  '',
+      interpretation: 'Item-level responses only; this survey has no composite score',
+    }
+  }
   if (instrument?.scoring_config?.type === 'sum') {
     return scoreDynamic(responses, instrument.scoring_config)
   }

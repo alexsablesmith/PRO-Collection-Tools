@@ -108,9 +108,10 @@ export default function ItemBankPage() {
       languages:          ['en'],
       is_active:          true,
       questions:          { en: questionDef },
-      // Mixed items from different scales: sum is recorded but item-level
-      // responses (and the ADL matrix) are the meaningful output.
-      scoring_config:     { type: 'sum', severityBands: [] },
+      // Mixed items from different scales have no composite score; the
+      // output is each question with the selected response (plus the ADL
+      // matrix, which joins item-level answers back to ICF metadata).
+      scoring_config:     { type: 'none' },
     })
 
     if (error) {

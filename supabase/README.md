@@ -37,3 +37,4 @@ control and code review.
 | `20260706000003_item_bank_seed.sql` | Seeds 321 questions from PROM_Survey_Database.xlsx with ICF/body-region metadata | Same as above |
 | `20260706000004_new_instruments_seed.sql` | Registers ODI, NDI, DASH, QuickDASH, KOOS, HOOS, WOMAC, LEFS, FAAM, HAQ-DI, UW Pain Concerns in the instruments table | Administering the new instruments |
 | `20260706000005_instruments_write_policy.sql` | RLS policy letting clinical-role users insert/update instruments | Custom survey builder, freeform batteries, admin instrument creation |
+| `20260719000006_custom_surveys_no_score.sql` | Flips pre-existing custom surveys to scoring type "none" (no composite score) | Correct display of custom surveys created before 2026-07-19 |
