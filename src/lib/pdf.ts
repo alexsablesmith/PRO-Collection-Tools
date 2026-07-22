@@ -4,10 +4,9 @@
  * The full PDF generation logic is the same as the standalone HTML app.
  */
 
-import type { Patient, SurveyResponse, SurveyRequest, Instrument, Item } from '@/types/database'
+import type { Patient, SurveyResponse, SurveyRequest, Instrument } from '@/types/database'
 import { INSTRUMENT_META } from '@/config/scoring'
 import { SURVEY_QUESTIONS } from '@/config/surveyQuestions'
-import { computeAdlMatrix, impairmentBucket } from '@/lib/adl'
 import { format, parseISO } from 'date-fns'
 
 interface VisitData {
@@ -18,7 +17,7 @@ interface VisitData {
 export async function buildPatientPDF(
   patient: Patient,
   visits: VisitData[],
-  options?: { includeResponses?: boolean; adlItems?: Item[] }
+  options?: { includeResponses?: boolean }
 ) {
   // Dynamically import jsPDF (browser only)
   const { jsPDF } = await import('jspdf')
@@ -628,101 +627,6 @@ export async function buildPatientPDF(
     )
     italicNote("Score: 1=A lot better, 4=No change, 7=A lot worse. Reflects patient's overall impression of change since starting the functional restoration program.")
     y += 4
-  }
-
-  // ── ADL impact matrix (medical-legal) ─────────────────────────
-  if (options?.adlItems && options.adlItems.length > 0 && visits.length > 0) {
-    const latestVisit = visits[visits.length - 1]
-    const answers: Record<string, number> = {}
-    latestVisit.responses.forEach(r => Object.assign(answers, (r.raw_responses ?? {}) as Record<string, number>))
-    const matrix = computeAdlMatrix(options.adlItems, answers)
-
-    if (matrix.nAnswered > 0) {
-      sectionHead('ADL Impact by Body Region')
-      italicNote(
-        `Based on ${matrix.nAnswered} ICF-tagged item responses from the ${visitDates[visits.length - 1]} visit. ` +
-        'Cells show mean item-level impairment (0% = no reported difficulty, 100% = maximal), grouped into ' +
-        'activity-of-daily-living categories aligned with the AMA Guides (5th ed., Table 1-2). ' +
-        'Items tagged with two body regions contribute to both. n = contributing items.'
-      )
-
-      const BUCKET_BG: Record<string, number[]> = {
-        none:     [198, 239, 206],
-        mild:     [255, 235, 156],
-        moderate: [255, 205, 155],
-        severe:   [255, 180, 180],
-      }
-
-      // Column layout: category label + one column per region + overall
-      const CAT_W = 118
-      const nCols = matrix.regions.length + 1
-      const colW  = Math.max(34, Math.floor((CW - CAT_W) / nCols))
-      const HDR_H2 = 26, ROW_H2 = 22, PAD2 = 4
-      const totalW = CAT_W + nCols * colW
-
-      checkPage(HDR_H2 + matrix.rows.length * ROW_H2 + 8)
-      const tblY = y
-      fillRect(ML, tblY, totalW, HDR_H2, HDRBG)
-      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(6.5); setClr(NAVY)
-      pdf.text('ADL Category', ML + PAD2, tblY + 16)
-      let hx = ML + CAT_W
-      ;[...matrix.regions, 'Overall'].forEach(region => {
-        const lines = pdf.splitTextToSize(safe(region), colW - 2)
-        lines.slice(0, 2).forEach((line: string, li: number) => {
-          pdf.text(line, hx + colW / 2, tblY + 11 + li * 8, { align: 'center' })
-        })
-        hx += colW
-      })
-      y = tblY + HDR_H2
-
-      matrix.rows.forEach((row, ri) => {
-        checkPage(ROW_H2 + 2)
-        fillRect(ML, y, totalW, ROW_H2, ri % 2 === 0 ? WHITE : ALT)
-        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7.5); setClr([30, 30, 30])
-        const catLines = pdf.splitTextToSize(safe(row.category), CAT_W - PAD2 * 2)
-        pdf.text(catLines[0], ML + PAD2, y + 13)
-
-        let cx = ML + CAT_W
-        ;[...matrix.regions.map(r => row.cells[r]), row.overall].forEach(cell => {
-          if (cell) {
-            fillRect(cx + 1, y + 2, colW - 2, ROW_H2 - 4, BUCKET_BG[impairmentBucket(cell.impairmentPct)])
-            setClr([30, 30, 30]); pdf.setFontSize(7.5)
-            pdf.text(`${cell.impairmentPct}%`, cx + colW / 2, y + 11, { align: 'center' })
-            pdf.setFontSize(5.5); setClr(GRAY)
-            pdf.text(`n=${cell.nItems}`, cx + colW / 2, y + 18, { align: 'center' })
-          } else {
-            setClr([200, 200, 200]); pdf.setFontSize(7.5)
-            pdf.text('-', cx + colW / 2, y + 13, { align: 'center' })
-          }
-          cx += colW
-        })
-        y += ROW_H2
-      })
-
-      const tblH = y - tblY
-      pdf.setDrawColor(180, 180, 180); pdf.setLineWidth(0.5); pdf.rect(ML, tblY, totalW, tblH)
-      pdf.line(ML + CAT_W, tblY, ML + CAT_W, tblY + tblH)
-      pdf.line(ML + totalW - colW, tblY, ML + totalW - colW, tblY + tblH)
-      pdf.line(ML, tblY + HDR_H2, ML + totalW, tblY + HDR_H2)
-      y += 8
-
-      if (matrix.multiRegion.length > 0) {
-        checkPage(20 + matrix.multiRegion.length * 12)
-        pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9); setClr(NAVY)
-        pdf.text('Activities affected by multiple body regions', ML, y); y += 12
-        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); setClr([30, 30, 30])
-        matrix.multiRegion.forEach(f => {
-          const line = `${f.label} (${f.code}): ` +
-            f.regions.map(r => `${r.region} ${r.impairmentPct}%`).join(', ')
-          const lines = pdf.splitTextToSize(safe(line), CW - 10)
-          checkPage(lines.length * 11 + 2)
-          pdf.text(lines, ML + 6, y)
-          y += lines.length * 11 + 2
-        })
-        y += 4
-      }
-      y += 4
-    }
   }
 
   // ── Custom survey responses (no composite score) ──────────────

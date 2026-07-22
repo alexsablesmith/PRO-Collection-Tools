@@ -6,11 +6,10 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { format, parseISO } from 'date-fns'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import type { Patient, SurveyRequest, SurveyResponse, Instrument, Item, ClinicalEvent, ClinicalEventType } from '@/types/database'
+import type { Patient, SurveyRequest, SurveyResponse, Instrument, ClinicalEvent, ClinicalEventType } from '@/types/database'
 import { INSTRUMENT_META } from '@/config/scoring'
 import { SURVEY_QUESTIONS } from '@/config/surveyQuestions'
 import PromisScoreChart, { type PromisDomain, type PromisVisit } from '@/components/results/PromisScoreChart'
-import AdlMatrix from '@/components/results/AdlMatrix'
 
 interface VisitData {
   request:   SurveyRequest
@@ -25,10 +24,8 @@ export default function PatientDetailPage() {
   const [patient,         setPatient]         = useState<Patient | null>(null)
   const [visits,          setVisits]          = useState<VisitData[]>([])
   const [loading,         setLoading]         = useState(true)
-  const [activeTab,       setActiveTab]       = useState<'history'|'charts'|'adl'|'events'>('history')
+  const [activeTab,       setActiveTab]       = useState<'history'|'charts'|'events'>('history')
   const [expandedVisitId, setExpandedVisitId] = useState<string | null>(null)
-  const [items,           setItems]           = useState<Item[]>([])
-  const [adlVisitId,      setAdlVisitId]      = useState<string | null>(null)
   const [events,          setEvents]          = useState<ClinicalEvent[]>([])
   const [compareEventId,  setCompareEventId]  = useState<string | null>(null)
   const [showEventForm,   setShowEventForm]   = useState(false)
@@ -60,13 +57,11 @@ export default function PatientDetailPage() {
   async function loadData() {
     setLoading(true)
 
-    const [{ data: patientData }, { data: requestData }, { data: itemData }, { data: eventData }] = await Promise.all([
+    const [{ data: patientData }, { data: requestData }, { data: eventData }] = await Promise.all([
       supabase.from('patients').select('*').eq('id', id).single(),
       supabase.from('survey_requests').select('*').eq('patient_id', id).eq('status', 'completed').order('completed_at', { ascending: true }),
-      supabase.from('items').select('*').limit(1000),
       supabase.from('clinical_events').select('*').eq('patient_id', id).order('event_date', { ascending: true }),
     ])
-    setItems(itemData ?? [])
     setEvents(eventData ?? [])
 
     if (!patientData) { setLoading(false); return }
@@ -282,7 +277,6 @@ export default function PatientDetailPage() {
           {([
             ['history', 'Survey History'],
             ['charts',  'Score Trends'],
-            ['adl',     'ADL Impact'],
             ['events',  'Events & Pre/Post'],
           ] as const).map(([tab, label]) => (
             <button
@@ -483,38 +477,6 @@ export default function PatientDetailPage() {
                 ))}
               </div>
             )}
-          </div>
-        )}
-
-        {/* ADL Impact Tab (medical-legal view) */}
-        {activeTab === 'adl' && (
-          <div>
-            {visits.length === 0 ? (
-              <div className="card text-center py-12"><p className="text-gray-500">No completed surveys yet.</p></div>
-            ) : (() => {
-              const visit = visits.find(v => v.request.id === adlVisitId) ?? visits[visits.length - 1]
-              const answers: Record<string, number> = {}
-              visit.responses.forEach(r => Object.assign(answers, r.raw_responses ?? {}))
-              return (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <label className="text-sm text-gray-600">Evaluation date:</label>
-                    <select
-                      className="input w-auto"
-                      value={visit.request.id}
-                      onChange={e => setAdlVisitId(e.target.value)}
-                    >
-                      {[...visits].reverse().map(v => (
-                        <option key={v.request.id} value={v.request.id}>
-                          {v.request.completed_at ? format(parseISO(v.request.completed_at), 'MMMM d, yyyy') : 'Unknown date'}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <AdlMatrix items={items} answers={answers} />
-                </div>
-              )
-            })()}
           </div>
         )}
 

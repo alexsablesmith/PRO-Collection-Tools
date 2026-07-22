@@ -4,7 +4,7 @@ import Head from 'next/head'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { format, parseISO } from 'date-fns'
-import type { Patient, SurveyRequest, SurveyResponse, Instrument, Item } from '@/types/database'
+import type { Patient, SurveyRequest, SurveyResponse, Instrument } from '@/types/database'
 import { INSTRUMENT_META } from '@/config/scoring'
 
 // Import the PDF generator we already built
@@ -28,8 +28,6 @@ export default function ReportPage() {
   const [generating,       setGenerating]       = useState(false)
   const [warning,          setWarning]          = useState('')
   const [includeResponses, setIncludeResponses] = useState(false)
-  const [includeAdl,       setIncludeAdl]       = useState(true)
-  const [items,            setItems]            = useState<Item[]>([])
 
   useEffect(() => { if (id) loadData() }, [id])
 
@@ -43,8 +41,6 @@ export default function ReportPage() {
 
     const { data: resps } = await supabase.from('survey_responses').select('*, instruments(*)').in('survey_request_id', reqs.map(r => r.id))
     const { data: insts } = await supabase.from('instruments').select('*')
-    const { data: bankItems } = await supabase.from('items').select('*').limit(1000)
-    setItems(bankItems ?? [])
     const instMap = Object.fromEntries((insts ?? []).map(i => [i.id, i]))
 
     const visitData: VisitData[] = reqs.map(req => ({
@@ -91,7 +87,7 @@ export default function ReportPage() {
     // silently fails or the wrong error surfaces).
     try {
       const { buildPatientPDF } = await import('@/lib/pdf')
-      await buildPatientPDF(patient, selectedVisits, { includeResponses, adlItems: includeAdl ? items : undefined })
+      await buildPatientPDF(patient, selectedVisits, { includeResponses })
     } catch (e) {
       console.error('PDF generation error:', e)
       const detail = e instanceof Error ? e.message : String(e)
@@ -153,7 +149,7 @@ export default function ReportPage() {
           {warning && <p className="text-xs text-amber-700 mt-2">{warning}</p>}
         </div>
 
-        <label className="flex items-center gap-2 mb-2 cursor-pointer">
+        <label className="flex items-center gap-2 mb-4 cursor-pointer">
           <input
             type="checkbox"
             checked={includeResponses}
@@ -161,16 +157,6 @@ export default function ReportPage() {
             className="rounded"
           />
           <span className="text-sm text-gray-700">Include individual question responses</span>
-        </label>
-
-        <label className="flex items-center gap-2 mb-4 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={includeAdl}
-            onChange={e => setIncludeAdl(e.target.checked)}
-            className="rounded"
-          />
-          <span className="text-sm text-gray-700">Include ADL impact matrix (medical-legal)</span>
         </label>
 
         <button
