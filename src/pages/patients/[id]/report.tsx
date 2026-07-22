@@ -85,14 +85,17 @@ export default function ReportPage() {
       .filter(Boolean)
       .sort((a, b) => new Date(a!.request.completed_at!).getTime() - new Date(b!.request.completed_at!).getTime()) as VisitData[]
 
-    // Dynamically import jsPDF and build the PDF
-    // This reuses the same PDF generation logic from our standalone app
+    // Dynamically import jsPDF and build the PDF.
+    // buildPatientPDF is async — it MUST be awaited, otherwise a failure
+    // rejects a floating promise that this try/catch never sees (the report
+    // silently fails or the wrong error surfaces).
     try {
       const { buildPatientPDF } = await import('@/lib/pdf')
-      buildPatientPDF(patient, selectedVisits, { includeResponses, adlItems: includeAdl ? items : undefined })
-    } catch(e) {
+      await buildPatientPDF(patient, selectedVisits, { includeResponses, adlItems: includeAdl ? items : undefined })
+    } catch (e) {
       console.error('PDF generation error:', e)
-      alert('Error generating PDF. Please try again.')
+      const detail = e instanceof Error ? e.message : String(e)
+      alert(`Error generating PDF: ${detail}\n\nIf this persists, reload the page (the app may have updated) and try again.`)
     }
 
     setGenerating(false)
