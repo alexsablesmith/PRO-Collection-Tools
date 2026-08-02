@@ -52,7 +52,7 @@ HAQ_OPTS    = opts([(0, 'Without any difficulty'), (1, 'With some difficulty'), 
 PHQ_OPTS    = opts([(0, 'Not at all'), (1, 'Several days'), (2, 'More than half the days'), (3, 'Nearly every day')])
 TSK_OPTS    = opts([(1, 'Strongly Disagree'), (2, 'Disagree'), (3, 'Agree'), (4, 'Strongly Agree')])
 PCS_OPTS    = opts([(0, 'Not at all'), (1, 'To a slight degree'), (2, 'To a moderate degree'), (3, 'To a great degree'), (4, 'All the time')])
-UW_OPTS     = opts([(0, 'Not at all'), (1, 'Slightly'), (2, 'Moderately'), (3, 'Quite a bit'), (4, 'Extremely')])
+UW_OPTS     = opts([(1, 'Never'), (2, 'Rarely'), (3, 'Sometimes'), (4, 'Often'), (5, 'Always')])
 PROMIS_PF   = opts([(5, 'Without any difficulty'), (4, 'With a little difficulty'), (3, 'With some difficulty'), (2, 'With much difficulty'), (1, 'Unable to do')])
 PROMIS_FREQ = opts([(1, 'Never'), (2, 'Rarely'), (3, 'Sometimes'), (4, 'Often'), (5, 'Always')])
 PROMIS_FREQ_REV = opts([(5, 'Never'), (4, 'Rarely'), (3, 'Sometimes'), (2, 'Usually'), (1, 'Always')])
@@ -124,6 +124,35 @@ HOOS_OFFICIAL = [
     ('How much are you troubled with lack of confidence in your hip?',                 LIKERT_EXTREMELY_04,   None, None),
     ('In general, how much difficulty do you have with your hip?',                     LIKERT_NONE_EXTREME,   None, None),
 ]
+
+# ── Official UW-CAP 6-item short form (Amtmann/Jensen/Turk, UW, v1.0) ─────────
+# The PROM spreadsheet's "UW Pain Concerns" is a different, non-validated item
+# set on a 0-4 scale; it cannot use the official IRT T-score table. These are
+# the real 6 items (1=Never ... 5=Always). Pain-catastrophizing cognitions →
+# tagged to ICF b152 (emotional functions); no body region.
+UW_CAP_OFFICIAL = [
+    'My pain is more than I can manage.',
+    'Because of my pain, I will never be happy again.',
+    'Because of my pain, my life is terrible.',
+    'My life will only get worse because of my pain.',
+    'Did you keep thinking about how much it hurts?',
+    'Did you have trouble thinking of anything other than your pain?',
+]
+
+# Official Spanish (informal register) translation, UW (Gonzalez & Obregon).
+UW_CAP_ES = {
+    'title':     'Preocupaciones sobre el dolor (UW-CAP)',
+    'timeframe': 'En los últimos 7 días, ¿con qué frecuencia tuvo los siguientes pensamientos cuando sentía dolor?',
+    'items': [
+        'Mi dolor es más de lo que puedo manejar.',
+        'A causa de mi dolor, nunca volveré a ser feliz.',
+        'A causa de mi dolor, mi vida es terrible.',
+        'Mi vida solo empeorará por mi dolor.',
+        '¿Pensó constantemente en cuánto le dolía?',
+        '¿Tuvo dificultad para pensar en algo que no fuera su dolor?',
+    ],
+    'options': opts([(1, 'Nunca'), (2, 'Raramente'), (3, 'A veces'), (4, 'Frecuentemente'), (5, 'Siempre')]),
+}
 
 
 def dash_options(fmt):
@@ -204,7 +233,11 @@ def sql_str(s):
 
 
 def sql_jsonb(obj):
-    return "'" + json.dumps(clean(obj), ensure_ascii=False).replace("'", "''") + "'::jsonb"
+    # ensure_ascii=True escapes every non-ASCII char (e.g. Spanish é, ¿) as a
+    # JSON \uXXXX sequence, so the emitted SQL is pure ASCII and survives being
+    # pasted through the Supabase editor clipboard. Postgres' JSONB parser
+    # decodes the escapes back into the correct Unicode characters on insert.
+    return "'" + json.dumps(clean(obj), ensure_ascii=True).replace("'", "''") + "'::jsonb"
 
 
 def main():
@@ -271,7 +304,7 @@ def main():
             elif inst == 'PCS':
                 add('pcs', f'pcs_{i}', i, text, PCS_OPTS, row)
             elif inst == 'UW Pain Concerns':
-                add('uw_pain', f'uw_pain_{i}', i, text, UW_OPTS, row)
+                pass  # spreadsheet items aren't the UW-CAP; official items emitted below
             elif inst == 'PROMIS-29':
                 clean = re.sub(r'\s*\(PROMIS-29\)\s*$', '', text)
                 if i == 29:
@@ -296,6 +329,20 @@ def main():
             'body_region_primary': 'Hip', 'body_region_secondary': None,
             'response_format': '5-point Likert (None to Extreme)',
             'coding_notes': 'Official HOOS item (Nilsdotter 2003)',
+        })
+
+    # Emit the official UW-CAP 6-item short form (spreadsheet items skipped above).
+    for i, text in enumerate(UW_CAP_OFFICIAL, start=1):
+        items.append({
+            'instrument_code': 'uw_pain', 'item_key': f'uw_pain_{i}', 'position': i,
+            'text_en': text, 'options': UW_OPTS,
+            'higher_is_worse': True,
+            'icf_primary_code': None, 'icf_primary_label': None,
+            'icf_secondary_code': None, 'icf_secondary_label': None,
+            'mh_code': 'b152', 'mh_label': 'Emotional functions',
+            'body_region_primary': None, 'body_region_secondary': None,
+            'response_format': '5-point Likert (1=Never to 5=Always)',
+            'coding_notes': 'Official UW-CAP 6-item short form (Amtmann et al., UW v1.0)',
         })
 
     # ── items seed SQL ────────────────────────────────────────────
@@ -355,8 +402,8 @@ def main():
          'Please answer every question with the one response that most closely describes your condition within the past week.'),
         ('haq_di', 'Health Assessment Questionnaire (HAQ-DI)', 'Health Assessment Questionnaire',
          'Please indicate the response which best describes your usual abilities OVER THE PAST WEEK.'),
-        ('uw_pain', 'UW Pain-Related Concerns', 'Pain-Related Concerns',
-         'Please indicate how much each statement applies to you.'),
+        ('uw_pain', 'UW Concerns About Pain (UW-CAP)', 'UW Concerns About Pain',
+         'In the past 7 days, how often did you have each of the following thoughts when you were in pain?'),
     ]
 
     lines2 = [
@@ -365,6 +412,9 @@ def main():
         '-- Scoring rules live in src/config/scoring.ts (see SCORING_FUNCTIONS).',
         '',
     ]
+    # Instruments with an official translation: code -> Spanish question data.
+    SPANISH = {'uw_pain': UW_CAP_ES}
+
     for code, name, title, timeframe in NEW_INSTRUMENTS:
         inst_items = sorted([it for it in items if it['instrument_code'] == code], key=lambda x: x['position'])
         uniform = all(it['options'] == inst_items[0]['options'] for it in inst_items)
@@ -379,11 +429,22 @@ def main():
             'options': inst_items[0]['options'] if uniform else [],
         }
         questions = {'en': qdef}
+        langs = 'en'
+        es = SPANISH.get(code)
+        if es:
+            questions['es'] = {
+                'title': es['title'],
+                'timeframe': es['timeframe'],
+                'items': [{'id': it['item_key'], 'text': es['items'][i]}
+                          for i, it in enumerate(inst_items)],
+                'options': es['options'],
+            }
+            langs = 'en,es'
         lines2.append(f"""insert into public.instruments (code, name, version, scoring_config_key, languages, is_active, type, questions)
-select {sql_str(code)}, {sql_str(name)}, null, {sql_str(code)}, '{{en}}', true, 'standard', {sql_jsonb(questions)}
+select {sql_str(code)}, {sql_str(name)}, null, {sql_str(code)}, '{{{langs}}}', true, 'standard', {sql_jsonb(questions)}
 where not exists (select 1 from public.instruments where scoring_config_key = {sql_str(code)});
 
-update public.instruments set questions = {sql_jsonb(questions)}, name = {sql_str(name)}
+update public.instruments set questions = {sql_jsonb(questions)}, name = {sql_str(name)}, languages = '{{{langs}}}'
 where scoring_config_key = {sql_str(code)};
 """)
     OUT_INSTRUMENTS.write_text('\n'.join(lines2))

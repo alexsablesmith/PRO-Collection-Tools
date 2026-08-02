@@ -466,14 +466,50 @@ export function scoreHAQDI(responses: Record<string, number>): ScoreResult {
   }
 }
 
+// UW-CAP 6-item short form: summary score (6–30) → IRT-based T-score.
+// Source: UW Concerns About Pain (UW-CAP) v1.0 User Guide, 6-item conversion table.
+const UW_CAP_6ITEM_TSCORE: Record<number, number> = {
+   6: 30.8,  7: 35.3,  8: 38.7,  9: 41.6, 10: 44.1, 11: 46.2, 12: 48.1, 13: 49.7,
+  14: 51.2, 15: 52.6, 16: 54.0, 17: 55.4, 18: 56.8, 19: 58.2, 20: 59.6, 21: 61.1,
+  22: 62.5, 23: 64.0, 24: 65.5, 25: 67.0, 26: 68.7, 27: 70.5, 28: 72.5, 29: 74.9,
+  30: 78.1,
+}
+
 export function scoreUWPain(responses: Record<string, number>): ScoreResult {
-  // Sum 0–24, higher = more pain-related concern.
-  const raw = sumValues(responses)
+  // UW-CAP 6-item: each item 1–5. The raw sum is NOT interpretable on its own;
+  // it is converted to an IRT-based T-score (mean 50, SD 10; higher = more pain
+  // catastrophizing). Per the user guide a score can be produced when at least
+  // 4 of 6 items are answered, pro-rating the sum: (raw × 6) / answered, rounded
+  // up. More than two missing → not scorable.
+  const vals = Object.values(responses).filter(v => v !== null && v !== undefined)
+  const nAnswered = vals.length
+  if (nAnswered < 4) {
+    throw new Error(`At least 4 of 6 UW-CAP items must be answered to score (got ${nAnswered})`)
+  }
+  const rawSum = vals.reduce((a, b) => a + b, 0)
+  const summaryScore = nAnswered < 6 ? Math.ceil((rawSum * 6) / nAnswered) : rawSum
+  const tScore = UW_CAP_6ITEM_TSCORE[summaryScore]
+  if (tScore == null) throw new Error(`No UW-CAP T-score for summary score ${summaryScore}`)
+
+  // Cut points from the user guide: T=52 ≈ PCS 20 (moderate risk), T=57 ≈ PCS 30 (high risk)
+  let severityLabel: string, interpretation: string
+  if (tScore < 52) {
+    severityLabel  = 'Below clinical threshold'
+    interpretation = 'Pain catastrophizing below the moderate-risk cut point (T<52)'
+  } else if (tScore < 57) {
+    severityLabel  = 'Moderate concern'
+    interpretation = 'Moderate risk for prolonged pain and disability (T 52–56; ≈ PCS ≥20)'
+  } else {
+    severityLabel  = 'High concern'
+    interpretation = 'High risk for prolonged pain and disability (T≥57; ≈ PCS ≥30)'
+  }
+
   return {
-    rawScore: raw,
-    totalScore: raw,
-    severityLabel: '',
-    interpretation: '0 (no pain-related concerns) to 24 (extreme concerns)',
+    rawScore:   rawSum,
+    tScore,
+    totalScore: tScore,   // mirror into total_score so raw-score UIs still show the T-score
+    severityLabel,
+    interpretation,
   }
 }
 
@@ -741,11 +777,11 @@ export const INSTRUMENT_META: Record<string, {
     citation:       'Fries JF, Spitz P, Kraines RG, Holman HR. Measurement of patient outcome in arthritis. Arthritis Rheum. 1980;23(2):137-145.',
   },
   uw_pain: {
-    displayName:    'UW Pain-Related Concerns',
-    shortName:      'UW Pain',
+    displayName:    'UW Concerns About Pain (UW-CAP)',
+    shortName:      'UW-CAP',
     higherIsBetter: false,
-    isPromis:       false,
-    maxScore:       24,
-    citation:       'University of Washington Pain-Related Concerns scale.',
+    isPromis:       true,   // T-scored (mean 50, SD 10) — surfaced like PROMIS
+    maxScore:       80,
+    citation:       'Amtmann D, Jensen MP, Turk D, et al. University of Washington Concerns About Pain (UW-CAP) Scale v1.0. 6-item short form. IRT-based T-score.',
   },
 }

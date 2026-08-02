@@ -176,7 +176,7 @@ export default function ScoringRulesPage() {
             lefs:      'Sum of 20 items (0–4 each). Range 0–80; higher = better function. MCID ≈ 9 points.',
             faam:      'ADL subscale (21 items) and Sports subscale (8 items) each reported as % of maximum. ADL is the primary score.',
             haq_di:    'Highest score within each of 8 categories, averaged. Range 0–3; higher = greater disability.',
-            uw_pain:   'Sum of 6 items (0–4 each). Range 0–24; higher = greater pain-related concern.',
+            uw_pain:   'UW-CAP 6-item: each item 1–5 (Never–Always). The raw sum (6–30) is converted to an IRT-based T-score (mean 50, SD 10); higher = greater pain catastrophizing. Cut points: T≥52 moderate, T≥57 high risk. Scorable with ≥4 of 6 items (pro-rated).',
             pain_nrs:  'Single 0–10 numeric rating. Mild 0–3, Moderate 4–6, Severe 7–10.',
           }
           const regional = instruments.filter(([k]) =>

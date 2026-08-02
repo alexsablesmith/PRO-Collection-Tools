@@ -593,7 +593,7 @@ export async function buildPatientPDF(
   y+=10
 
   // ── Functional & regional instruments (ODI, NDI, DASH, KOOS, …) ──
-  const REGIONAL_KEYS = ['odi','ndi','dash','quickdash','koos','hoos','womac','lefs','faam','haq_di','uw_pain']
+  const REGIONAL_KEYS = ['odi','ndi','dash','quickdash','koos','hoos','womac','lefs','faam','haq_di']
   const regionalPresent = REGIONAL_KEYS.filter(key =>
     visits.some(v => v.responses.some(r => r.instrument?.scoring_config_key === key)))
 
@@ -613,6 +613,23 @@ export async function buildPatientPDF(
         }))
     })
     italicNote('ODI/DASH/QuickDASH: 0-100, higher = greater disability. KOOS/HOOS: 0-100, higher = better. WOMAC: 0-96, higher = worse. LEFS: 0-80, higher = better. FAAM: 0-100%, higher = better. HAQ-DI: 0-3, higher = worse.')
+    y += 4
+  }
+
+  // UW-CAP (T-scored, not a raw regional score)
+  const hasUwCap = visits.some(v => v.responses.some(r => r.instrument?.scoring_config_key === 'uw_pain'))
+  if (hasUwCap) {
+    sectionHead('UW Concerns About Pain (UW-CAP)')
+    drawScaleTable('UW-CAP', 80,
+      visits.map(v => {
+        const r = v.responses.find(r => r.instrument?.scoring_config_key === 'uw_pain')
+        return r?.t_score != null ? `T=${r.t_score.toFixed(1)}` : 'No Data'
+      }),
+      visits.map(v => {
+        const r = v.responses.find(r => r.instrument?.scoring_config_key === 'uw_pain')
+        return r?.severity_label || 'No Data'
+      }))
+    italicNote('IRT-based T-score (mean 50, SD 10); higher = greater pain catastrophizing. The raw item sum is not interpretable. Cut points per the UW-CAP user guide: T>=52 moderate risk, T>=57 high risk.')
     y += 4
   }
 

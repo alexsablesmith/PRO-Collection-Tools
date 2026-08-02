@@ -2752,66 +2752,6 @@ insert into public.items (instrument_code, item_key, position, text_en, options,
     body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
     response_format = excluded.response_format, coding_notes = excluded.coding_notes;
 insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('uw_pain', 'uw_pain_1', 1, 'I am worried that my pain will get worse', '[{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Slightly"}, {"value": 2, "label": "Moderately"}, {"value": 3, "label": "Quite a bit"}, {"value": 4, "label": "Extremely"}]'::jsonb, true, null, null, null, null, 'b152', 'Emotional functions', 'Generalized', null, '5-point Likert (Not at all to Extremely)', null)
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('uw_pain', 'uw_pain_2', 2, 'I am concerned that my pain will never get better', '[{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Slightly"}, {"value": 2, "label": "Moderately"}, {"value": 3, "label": "Quite a bit"}, {"value": 4, "label": "Extremely"}]'::jsonb, true, null, null, null, null, 'b152', 'Emotional functions', 'Generalized', null, '5-point Likert (Not at all to Extremely)', null)
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('uw_pain', 'uw_pain_3', 3, 'I worry that my pain means something is seriously wrong with my body', '[{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Slightly"}, {"value": 2, "label": "Moderately"}, {"value": 3, "label": "Quite a bit"}, {"value": 4, "label": "Extremely"}]'::jsonb, true, null, null, null, null, 'b152', 'Emotional functions', 'Generalized', null, '5-point Likert (Not at all to Extremely)', null)
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('uw_pain', 'uw_pain_4', 4, 'I am afraid my pain will become disabling', '[{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Slightly"}, {"value": 2, "label": "Moderately"}, {"value": 3, "label": "Quite a bit"}, {"value": 4, "label": "Extremely"}]'::jsonb, true, null, null, null, null, 'b152', 'Emotional functions', 'Generalized', null, '5-point Likert (Not at all to Extremely)', null)
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('uw_pain', 'uw_pain_5', 5, 'I am concerned about how pain will affect my future', '[{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Slightly"}, {"value": 2, "label": "Moderately"}, {"value": 3, "label": "Quite a bit"}, {"value": 4, "label": "Extremely"}]'::jsonb, true, null, null, null, null, 'b152', 'Emotional functions', 'Generalized', null, '5-point Likert (Not at all to Extremely)', null)
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
-  values ('uw_pain', 'uw_pain_6', 6, 'I worry that my pain will interfere with my ability to work', '[{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Slightly"}, {"value": 2, "label": "Moderately"}, {"value": 3, "label": "Quite a bit"}, {"value": 4, "label": "Extremely"}]'::jsonb, true, 'd850', 'Remunerative employment', null, null, 'b152', 'Emotional functions', 'Generalized', null, '5-point Likert (Not at all to Extremely)', 'Straddles functional and MH')
-  on conflict (instrument_code, item_key) do update set
-    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
-    higher_is_worse = excluded.higher_is_worse,
-    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
-    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
-    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
-    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
-    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
-insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
   values ('hoos', 'hoos_1', 1, 'Do you feel grinding, hear clicking or any other type of noise from your hip?', '[{"value": 0, "label": "Never"}, {"value": 1, "label": "Rarely"}, {"value": 2, "label": "Sometimes"}, {"value": 3, "label": "Often"}, {"value": 4, "label": "Always"}]'::jsonb, true, null, null, null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
   on conflict (instrument_code, item_key) do update set
     position = excluded.position, text_en = excluded.text_en, options = excluded.options,
@@ -3203,6 +3143,66 @@ insert into public.items (instrument_code, item_key, position, text_en, options,
     response_format = excluded.response_format, coding_notes = excluded.coding_notes;
 insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
   values ('hoos', 'hoos_40', 40, 'In general, how much difficulty do you have with your hip?', '[{"value": 0, "label": "None"}, {"value": 1, "label": "Mild"}, {"value": 2, "label": "Moderate"}, {"value": 3, "label": "Severe"}, {"value": 4, "label": "Extreme"}]'::jsonb, true, null, null, null, null, null, null, 'Hip', null, '5-point Likert (None to Extreme)', 'Official HOOS item (Nilsdotter 2003)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('uw_pain', 'uw_pain_1', 1, 'My pain is more than I can manage.', '[{"value": 1, "label": "Never"}, {"value": 2, "label": "Rarely"}, {"value": 3, "label": "Sometimes"}, {"value": 4, "label": "Often"}, {"value": 5, "label": "Always"}]'::jsonb, true, null, null, null, null, 'b152', 'Emotional functions', null, null, '5-point Likert (1=Never to 5=Always)', 'Official UW-CAP 6-item short form (Amtmann et al., UW v1.0)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('uw_pain', 'uw_pain_2', 2, 'Because of my pain, I will never be happy again.', '[{"value": 1, "label": "Never"}, {"value": 2, "label": "Rarely"}, {"value": 3, "label": "Sometimes"}, {"value": 4, "label": "Often"}, {"value": 5, "label": "Always"}]'::jsonb, true, null, null, null, null, 'b152', 'Emotional functions', null, null, '5-point Likert (1=Never to 5=Always)', 'Official UW-CAP 6-item short form (Amtmann et al., UW v1.0)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('uw_pain', 'uw_pain_3', 3, 'Because of my pain, my life is terrible.', '[{"value": 1, "label": "Never"}, {"value": 2, "label": "Rarely"}, {"value": 3, "label": "Sometimes"}, {"value": 4, "label": "Often"}, {"value": 5, "label": "Always"}]'::jsonb, true, null, null, null, null, 'b152', 'Emotional functions', null, null, '5-point Likert (1=Never to 5=Always)', 'Official UW-CAP 6-item short form (Amtmann et al., UW v1.0)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('uw_pain', 'uw_pain_4', 4, 'My life will only get worse because of my pain.', '[{"value": 1, "label": "Never"}, {"value": 2, "label": "Rarely"}, {"value": 3, "label": "Sometimes"}, {"value": 4, "label": "Often"}, {"value": 5, "label": "Always"}]'::jsonb, true, null, null, null, null, 'b152', 'Emotional functions', null, null, '5-point Likert (1=Never to 5=Always)', 'Official UW-CAP 6-item short form (Amtmann et al., UW v1.0)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('uw_pain', 'uw_pain_5', 5, 'Did you keep thinking about how much it hurts?', '[{"value": 1, "label": "Never"}, {"value": 2, "label": "Rarely"}, {"value": 3, "label": "Sometimes"}, {"value": 4, "label": "Often"}, {"value": 5, "label": "Always"}]'::jsonb, true, null, null, null, null, 'b152', 'Emotional functions', null, null, '5-point Likert (1=Never to 5=Always)', 'Official UW-CAP 6-item short form (Amtmann et al., UW v1.0)')
+  on conflict (instrument_code, item_key) do update set
+    position = excluded.position, text_en = excluded.text_en, options = excluded.options,
+    higher_is_worse = excluded.higher_is_worse,
+    icf_primary_code = excluded.icf_primary_code, icf_primary_label = excluded.icf_primary_label,
+    icf_secondary_code = excluded.icf_secondary_code, icf_secondary_label = excluded.icf_secondary_label,
+    mh_code = excluded.mh_code, mh_label = excluded.mh_label,
+    body_region_primary = excluded.body_region_primary, body_region_secondary = excluded.body_region_secondary,
+    response_format = excluded.response_format, coding_notes = excluded.coding_notes;
+insert into public.items (instrument_code, item_key, position, text_en, options, higher_is_worse, icf_primary_code, icf_primary_label, icf_secondary_code, icf_secondary_label, mh_code, mh_label, body_region_primary, body_region_secondary, response_format, coding_notes)
+  values ('uw_pain', 'uw_pain_6', 6, 'Did you have trouble thinking of anything other than your pain?', '[{"value": 1, "label": "Never"}, {"value": 2, "label": "Rarely"}, {"value": 3, "label": "Sometimes"}, {"value": 4, "label": "Often"}, {"value": 5, "label": "Always"}]'::jsonb, true, null, null, null, null, 'b152', 'Emotional functions', null, null, '5-point Likert (1=Never to 5=Always)', 'Official UW-CAP 6-item short form (Amtmann et al., UW v1.0)')
   on conflict (instrument_code, item_key) do update set
     position = excluded.position, text_en = excluded.text_en, options = excluded.options,
     higher_is_worse = excluded.higher_is_worse,
