@@ -1,8 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
-import type { InstrumentQuestionDef, InstrumentScoringConfig, SurveyProgress } from '@/types/database'
+import type {
+  ChoirBodyMap as ChoirBodyMapValue, CompositeQuestionDef, InstrumentQuestionDef, InstrumentScoringConfig,
+  MatrixBlock, PainDrawing, ResponseValue, SurveyProgress,
+} from '@/types/database'
 import { SURVEY_QUESTIONS } from '@/config/surveyQuestions'
+import BodyMapCanvas from '@/components/survey/BodyMapCanvas'
+import ChoirBodyMap from '@/components/survey/ChoirBodyMap'
 
 // Slimmed instrument shape returned by GET /api/survey/[token]
 interface SurveyInstrument {
@@ -34,7 +39,7 @@ export default function SurveyPage() {
   const [error,        setError]        = useState('')
   const [step,         setStep]         = useState(0)
   const [demographics, setDemographics] = useState({ first_name: '', last_name: '', date_of_birth: '', gender: '', preferred_language: 'en' })
-  const [responses,    setResponses]    = useState<Record<string, Record<string, number>>>({})
+  const [responses,    setResponses]    = useState<Record<string, Record<string, ResponseValue>>>({})
   const [submitting,   setSubmitting]   = useState(false)
   const [submitError,  setSubmitError]  = useState('')
   const [completed,    setCompleted]    = useState(false)
@@ -95,10 +100,17 @@ export default function SurveyPage() {
   function getQuestions(inst: SurveyInstrument) {
     return inst.questions?.[lang]
       ?? SURVEY_QUESTIONS[inst.scoring_config_key]?.[lang]
+      ?? inst.questions?.['en']
+      ?? SURVEY_QUESTIONS[inst.scoring_config_key]?.['en']
   }
 
-  function setItemResponse(instrumentKey: string, itemId: string, value: number) {
+  function setItemResponse(instrumentKey: string, itemId: string, value: ResponseValue) {
     setResponses(r => ({ ...r, [instrumentKey]: { ...(r[instrumentKey] ?? {}), [itemId]: value } }))
+  }
+
+  function getComposite(inst: SurveyInstrument): CompositeQuestionDef | null {
+    if (inst.type !== 'composite') return null
+    return ((inst.questions as any)?.[lang] ?? (inst.questions as any)?.['en'] ?? null) as CompositeQuestionDef | null
   }
 
   function isCurrentComplete(): boolean {
@@ -106,9 +118,23 @@ export default function SurveyPage() {
       return !!(demographics.first_name && demographics.last_name && demographics.date_of_birth)
     }
     if (!currentInstrument) return false
+    const answered = responses[currentInstrument.scoring_config_key] ?? {}
+
+    const composite = getComposite(currentInstrument)
+    if (composite) {
+      // Every matrix item and NRS must be answered; the drawing is optional
+      // (a patient without pain may leave the body map blank).
+      return composite.blocks.every(block => {
+        if (block.kind === 'matrix') {
+          return block.sections.every(s => s.items.every(item => answered[item.id] !== undefined))
+        }
+        if (block.kind === 'nrs') return answered[block.id] !== undefined
+        return true
+      })
+    }
+
     const questions = getQuestions(currentInstrument)
     if (!questions) return true
-    const answered = responses[currentInstrument.scoring_config_key] ?? {}
     return questions.items.every((item: any) => answered[item.id] !== undefined)
   }
 
@@ -250,9 +276,123 @@ export default function SurveyPage() {
 
           {(step > 0 || !needsDemographics) && currentInstrument && (() => {
             const key = currentInstrument.scoring_config_key
+            const instResp = responses[key] ?? {}
+
+            // ── Composite instruments (block-based: ADL matrix + pain map) ──
+            const composite = getComposite(currentInstrument)
+            if (composite) {
+              return (
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4">{composite.title}</h2>
+                  <div className="space-y-6">
+                    {composite.blocks.map(block => {
+                      if (block.kind === 'matrix') {
+                        return (
+                          <MatrixBlockInput
+                            key={block.id}
+                            block={block}
+                            answered={instResp}
+                            onAnswer={(itemId, v) => setItemResponse(key, itemId, v)}
+                          />
+                        )
+                      }
+                      if (block.kind === 'drawing') {
+                        return (
+                          <div key={block.id} className="card">
+                            <h3 className="font-semibold text-gray-800 mb-1">{block.title}</h3>
+                            <p className="text-sm text-gray-500 mb-3">{block.instructions}</p>
+                            <BodyMapCanvas
+                              qualities={block.qualities}
+                              value={instResp[block.id] as PainDrawing | undefined}
+                              onChange={d => setItemResponse(key, block.id, d)}
+                              lang={lang}
+                            />
+                          </div>
+                        )
+                      }
+                      if (block.kind === 'choirmap') {
+                        return (
+                          <div key={block.id} className="card">
+                            <h3 className="font-semibold text-gray-800 mb-1">{block.title}</h3>
+                            <p className="text-sm text-gray-500 mb-3">{block.instructions}</p>
+                            <ChoirBodyMap
+                              sex={block.sex}
+                              qualities={block.qualities}
+                              value={instResp[block.id] as ChoirBodyMapValue | undefined}
+                              onChange={(v: ChoirBodyMapValue) => setItemResponse(key, block.id, v)}
+                              lang={lang}
+                            />
+                          </div>
+                        )
+                      }
+                      if (block.kind === 'checklist') {
+                        const selected = (instResp[block.id] as number[] | undefined) ?? []
+                        const NONE = block.options[0]?.value
+                        return (
+                          <div key={block.id} className="card">
+                            <h3 className="font-semibold text-gray-800 mb-1">{block.title}</h3>
+                            {block.instructions && <p className="text-sm text-gray-500 mb-3">{block.instructions}</p>}
+                            <div className="grid sm:grid-cols-2 gap-1.5">
+                              {block.options.map(opt => {
+                                const checked = selected.includes(opt.value)
+                                return (
+                                  <label
+                                    key={opt.value}
+                                    className={`flex items-center gap-2.5 p-2 rounded-lg cursor-pointer transition-colors ${checked ? 'bg-[#EBF3FB] border border-blue-300' : 'hover:bg-gray-50 border border-transparent'}`}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={checked}
+                                      onChange={() => {
+                                        let next: number[]
+                                        if (checked) {
+                                          next = selected.filter(v => v !== opt.value)
+                                        } else if (opt.value === NONE) {
+                                          next = [NONE] // "None" clears everything else
+                                        } else {
+                                          next = [...selected.filter(v => v !== NONE), opt.value]
+                                        }
+                                        setItemResponse(key, block.id, next)
+                                      }}
+                                      className="rounded flex-shrink-0"
+                                    />
+                                    <span className="text-sm text-gray-700">{opt.label}</span>
+                                  </label>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        )
+                      }
+                      // nrs
+                      return (
+                        <div key={block.id} className="card">
+                          <p className="text-gray-700 mb-4">{block.prompt}</p>
+                          <div className="grid grid-cols-11 gap-1">
+                            {Array.from({ length: 11 }, (_, v) => (
+                              <button
+                                key={v}
+                                onClick={() => setItemResponse(key, block.id, v)}
+                                className={`py-3 rounded-lg text-sm font-bold transition-colors ${instResp[block.id] === v ? 'bg-[#1F4E79] text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+                              >
+                                {v}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="flex justify-between text-xs text-gray-400 mt-2">
+                            <span>{block.minLabel}</span>
+                            <span>{block.maxLabel}</span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            }
+
             const questions = getQuestions(currentInstrument)
             if (!questions) return <div className="card"><p className="text-gray-500">Survey questions not available for this instrument.</p></div>
-            const instResp = responses[key] ?? {}
 
             return (
               <div>
@@ -384,6 +524,126 @@ export default function SurveyPage() {
           </p>
         </div>
       </div>
+    </>
+  )
+}
+
+/**
+ * A sectioned response matrix (activities as rows, options as columns) —
+ * table layout on wider screens, stacked cards on phones.
+ */
+function MatrixBlockInput({
+  block, answered, onAnswer,
+}: {
+  block:    MatrixBlock
+  answered: Record<string, ResponseValue>
+  onAnswer: (itemId: string, value: number) => void
+}) {
+  const nCols = block.options.length
+  return (
+    <div className="card">
+      <h3 className="font-semibold text-gray-800 mb-1">{block.title}</h3>
+      {block.instructions && <p className="text-sm text-gray-500 mb-3 italic">{block.instructions}</p>}
+
+      {/* Matrix layout (tablet/desktop) */}
+      <div className="hidden sm:block overflow-x-auto">
+        <table className="w-full text-sm border-collapse">
+          <thead>
+            <tr>
+              <th className="text-left py-2 pr-3 w-2/5"></th>
+              {block.options.map(opt => (
+                <th key={opt.value} className="text-center py-2 px-1.5 font-medium text-gray-600 text-xs align-bottom" style={{ minWidth: 64 }}>
+                  <div>{opt.label}</div>
+                  {opt.sublabel && <div className="font-normal text-[10px] text-gray-400 leading-tight mt-0.5">{opt.sublabel}</div>}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {block.sections.map(section => (
+              <SectionRows
+                key={section.header}
+                section={section}
+                nCols={nCols}
+                options={block.options}
+                answered={answered}
+                onAnswer={onAnswer}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Stacked layout (phones) */}
+      <div className="sm:hidden space-y-5">
+        {block.sections.map(section => (
+          <div key={section.header}>
+            <p className="text-xs font-bold uppercase tracking-wide text-navy-DEFAULT bg-hdrbg rounded px-2 py-1.5 mb-2">{section.header}</p>
+            <div className="space-y-3">
+              {section.items.map(item => (
+                <div key={item.id} className={`rounded-lg border p-3 ${answered[item.id] !== undefined ? 'border-blue-200' : 'border-gray-100'}`}>
+                  <p className="text-sm text-gray-800 mb-2">{item.text}</p>
+                  <div className="space-y-1">
+                    {block.options.map(opt => (
+                      <label key={opt.value} className={`flex items-center gap-2.5 p-2 rounded-lg cursor-pointer ${answered[item.id] === opt.value ? 'bg-[#EBF3FB] border border-blue-300' : 'hover:bg-gray-50 border border-transparent'}`}>
+                        <input
+                          type="radio"
+                          name={`${block.id}_${item.id}`}
+                          checked={answered[item.id] === opt.value}
+                          onChange={() => onAnswer(item.id, opt.value)}
+                          className="sr-only"
+                        />
+                        <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${answered[item.id] === opt.value ? 'border-[#1F4E79]' : 'border-gray-300'}`}>
+                          {answered[item.id] === opt.value && <div className="w-2 h-2 rounded-full bg-[#1F4E79]" />}
+                        </div>
+                        <span className="text-sm text-gray-700">
+                          {opt.label}
+                          {opt.sublabel && <span className="block text-xs text-gray-400">{opt.sublabel}</span>}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function SectionRows({
+  section, nCols, options, answered, onAnswer,
+}: {
+  section:  MatrixBlock['sections'][number]
+  nCols:    number
+  options:  MatrixBlock['options']
+  answered: Record<string, ResponseValue>
+  onAnswer: (itemId: string, value: number) => void
+}) {
+  return (
+    <>
+      <tr>
+        <td colSpan={nCols + 1} className="pt-3 pb-1">
+          <span className="text-xs font-bold uppercase tracking-wide text-navy-DEFAULT bg-hdrbg rounded px-2 py-1 inline-block">{section.header}</span>
+        </td>
+      </tr>
+      {section.items.map((item, qi) => (
+        <tr key={item.id} className={qi % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+          <td className="py-2.5 pr-3 text-gray-800 text-sm">{item.text}</td>
+          {options.map(opt => (
+            <td key={opt.value} className="text-center py-2.5 px-1.5">
+              <button
+                onClick={() => onAnswer(item.id, opt.value)}
+                className={`w-7 h-7 rounded-full border-2 flex items-center justify-center mx-auto transition-colors ${answered[item.id] === opt.value ? 'bg-[#1F4E79] border-[#1F4E79]' : 'border-gray-300 hover:border-[#2E75B6]'}`}
+              >
+                {answered[item.id] === opt.value && <div className="w-3 h-3 rounded-full bg-white" />}
+              </button>
+            </td>
+          ))}
+        </tr>
+      ))}
     </>
   )
 }

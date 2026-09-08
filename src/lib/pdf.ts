@@ -164,7 +164,7 @@ export async function buildPatientPDF(
   sectionHead('PROMIS Domain Scores')
   italicNote('PROMIS T-scores normed to US general population (mean=50, SD=10). For symptom scales, higher T = more symptoms. For Physical Function and Social Roles, higher T = better function.')
 
-  const PROMIS_CONFIGS = [
+  const PROMIS_CORE = [
     {label:'Physical Function',          rawKey:'promis_physical_function_4a_v2', hib:true },
     {label:'Anxiety',                    rawKey:'promis_anxiety_4a_v1',           hib:false},
     {label:'Depression',                 rawKey:'promis_depression_4a_v1',        hib:false},
@@ -173,13 +173,22 @@ export async function buildPatientPDF(
     {label:'Social Roles & Activities',  rawKey:'promis_social_4a_v1',            hib:true },
     {label:'Pain Interference',          rawKey:'promis_pain_interference_4a_v1', hib:false},
   ]
+  // ADL Functional Assessment forms — shown only when the patient took them,
+  // so standard reports are unchanged. All are function scales (higher = better).
+  const ADL_CONFIGS = [
+    {label:'Physical Function — PF 20a',    rawKey:'promis_pf_sf20a', hib:true},
+    {label:'Upper Extremity — UE 7a',       rawKey:'promis_ue_sf7a',  hib:true},
+    {label:'Upper Extremity — Neuro-QOL',   rawKey:'neuroqol_ue_sf',  hib:true},
+  ]
+  const hasResp = (key:string) => visits.some(v => v.responses.some(r => r.instrument?.scoring_config_key===key))
+  const PROMIS_CONFIGS = [...PROMIS_CORE, ...ADL_CONFIGS.filter(c => hasResp(c.rawKey))]
 
   if(nVisits===1){
     // Custom single-visit PROMIS table with score bar and severity coloring
     const DOM_W=150, T_W=52, BAR_W=118, INT_W=192
     const HDR_H=22, ROW_H=20, PAD=5
     const totalW=DOM_W+T_W+BAR_W+INT_W
-    checkPage(HDR_H+7*ROW_H+4)
+    checkPage(HDR_H+PROMIS_CONFIGS.length*ROW_H+4)
     const tblY=y
     fillRect(ML,tblY,totalW,HDR_H,HDRBG)
     pdf.setFont('helvetica','bold'); pdf.setFontSize(8.5); setClr(NAVY)
@@ -239,7 +248,7 @@ export async function buildPatientPDF(
     const INT_W=Math.floor(remaining/nVisits)
     const totalW=DOM_W+nVisits*(RAW_W+T_W+INT_W)
     const HDR_H=22, SUB_H=18, ROW_H=22, PAD=4
-    checkPage(HDR_H+SUB_H+7*ROW_H+4)
+    checkPage(HDR_H+SUB_H+PROMIS_CONFIGS.length*ROW_H+4)
     const tblY=y
     fillRect(ML,tblY,totalW,HDR_H,HDRBG)
     pdf.setFont('helvetica','bold'); pdf.setFontSize(8.5); setClr(NAVY)

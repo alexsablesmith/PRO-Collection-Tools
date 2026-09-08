@@ -53,6 +53,36 @@ export default function InstrumentPreviewModal({ instrument, onClose }: Props) {
         <div className="overflow-y-auto px-6 py-4 space-y-5">
           {!def ? (
             <p className="text-gray-500 text-sm">No question data available for this instrument.</p>
+          ) : Array.isArray((def as any).blocks) ? (
+            // Composite instrument: list its blocks (matrix / nrs / checklist / …)
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                Sections ({(def as any).blocks.length})
+              </p>
+              <ol className="space-y-3">
+                {(def as any).blocks.map((block: any, i: number) => {
+                  const items = block.kind === 'matrix'
+                    ? block.sections.flatMap((s: any) => s.items)
+                    : []
+                  const count = block.kind === 'matrix' ? items.length
+                    : block.kind === 'checklist' ? block.options.length : 1
+                  return (
+                    <li key={block.id} className="text-sm">
+                      <div className="flex gap-2 items-baseline">
+                        <span className="text-gray-400 font-medium">{i + 1}.</span>
+                        <span className="text-gray-800 font-medium">{block.title || block.prompt}</span>
+                        <span className="text-xs bg-teal-50 text-teal-700 rounded px-1.5 py-0.5">{block.kind} · {count}</span>
+                      </div>
+                      {block.kind === 'matrix' && (
+                        <ul className="mt-1 ml-6 list-disc text-gray-600 space-y-0.5">
+                          {items.map((it: any) => <li key={it.id}>{it.text}</li>)}
+                        </ul>
+                      )}
+                    </li>
+                  )
+                })}
+              </ol>
+            </div>
           ) : (
             <>
               {def.timeframe && (
