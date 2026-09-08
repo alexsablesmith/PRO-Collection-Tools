@@ -680,18 +680,41 @@ export async function buildPatientPDF(
         responses.forEach(resp => {
           const qDef = (resp.instrument.questions as any)?.['en']
           if (!qDef) return
-          const raw = (resp.raw_responses ?? {}) as Record<string, number>
+          const raw = (resp.raw_responses ?? {}) as Record<string, any>
 
           checkPage(30)
           pdf.setFont('helvetica','bold'); pdf.setFontSize(9.5); setClr(NAVY)
           pdf.text(safe(qDef.title), ML, y); y += 14
 
-          ;(qDef.items as any[]).forEach((item, qi) => {
-            const opts = (item.options ?? qDef.options ?? []) as { value: number; label: string }[]
-            const sel = raw[item.id]
-            const answer = sel != null ? (opts.find(o => o.value === sel)?.label ?? String(sel)) : null
+          // Composite instruments store `blocks`; flat surveys store `items`.
+          const flat: { text: string; answer: string | null }[] = []
+          const labelFor = (opts: any[], v: any) => opts.find((o: any) => o.value === v)?.label ?? String(v)
+          if (Array.isArray(qDef.blocks)) {
+            for (const block of qDef.blocks) {
+              if (block.kind === 'matrix') {
+                for (const section of block.sections) for (const it of section.items) {
+                  const sel = raw[it.id]
+                  flat.push({ text: it.text, answer: sel != null ? labelFor(block.options, sel) : null })
+                }
+              } else if (block.kind === 'nrs') {
+                const v = raw[block.id]
+                flat.push({ text: block.prompt, answer: typeof v === 'number' ? `${v} / 10` : null })
+              } else if (block.kind === 'checklist') {
+                const sel = raw[block.id]
+                const labels = Array.isArray(sel) ? sel.map((v: number) => labelFor(block.options, v)) : []
+                flat.push({ text: block.title, answer: labels.length ? labels.join(', ') : null })
+              }
+            }
+          } else if (Array.isArray(qDef.items)) {
+            for (const item of qDef.items) {
+              const opts = (item.options ?? qDef.options ?? []) as { value: number; label: string }[]
+              const sel = raw[item.id]
+              flat.push({ text: item.text, answer: sel != null ? labelFor(opts, sel) : null })
+            }
+          }
 
-            const qLines = pdf.splitTextToSize(safe(`${qi + 1}. ${item.text}`), CW - 10)
+          flat.forEach(({ text, answer }, qi) => {
+            const qLines = pdf.splitTextToSize(safe(`${qi + 1}. ${text}`), CW - 10)
             checkPage(qLines.length * 11 + 15)
             pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5); setClr([30,30,30])
             pdf.text(qLines, ML + 4, y); y += qLines.length * 11

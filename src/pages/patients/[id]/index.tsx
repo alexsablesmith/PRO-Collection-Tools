@@ -201,20 +201,61 @@ export default function PatientDetailPage() {
     return 'badge-sev'
   }
 
-  function buildResponseMatrix(instrument: Instrument, rawResponses: Record<string, number>) {
+  function buildResponseMatrix(instrument: Instrument, rawResponses: Record<string, any>) {
     // Clinician-facing views are always English, regardless of the
     // language the survey was administered in.
     const lang = 'en'
     const qDef = (instrument.questions as any)?.[lang]
       ?? SURVEY_QUESTIONS[instrument.scoring_config_key]?.[lang]
     if (!qDef) return null
+
+    type MItem = {
+      text: string
+      options: { value: number; label: string }[]
+      selected: number | null
+      selectedMulti?: number[]   // checklist (check-all-that-apply)
+    }
+
+    // Composite instruments store `blocks` (matrix / nrs / checklist / …),
+    // not a flat `items` array. Flatten them into displayable questions.
+    if (Array.isArray(qDef.blocks)) {
+      const items: MItem[] = []
+      for (const block of qDef.blocks) {
+        if (block.kind === 'matrix') {
+          for (const section of block.sections) {
+            for (const it of section.items) {
+              items.push({ text: it.text, options: block.options, selected: rawResponses[it.id] ?? null })
+            }
+          }
+        } else if (block.kind === 'nrs') {
+          const v = rawResponses[block.id]
+          items.push({
+            text: block.prompt,
+            options: Array.from({ length: 11 }, (_, i) => ({ value: i, label: String(i) })),
+            selected: typeof v === 'number' ? v : null,
+          })
+        } else if (block.kind === 'checklist') {
+          const sel = rawResponses[block.id]
+          items.push({
+            text: block.title,
+            options: block.options,
+            selected: null,
+            selectedMulti: Array.isArray(sel) ? sel : [],
+          })
+        }
+        // drawing / choirmap blocks are not simple selectable questions — skip.
+      }
+      return { title: qDef.title as string, timeframe: null as string | null, items }
+    }
+
+    if (!Array.isArray(qDef.items)) return null
     return {
       title:     qDef.title as string,
       timeframe: (qDef.timeframe ?? null) as string | null,
-      items: (qDef.items as any[]).map(item => ({
+      items: (qDef.items as any[]).map((item): MItem => ({
         text:     item.text as string,
         options:  (item.options ?? qDef.options) as { value: number; label: string }[],
-        selected: rawResponses[item.id] ?? null,
+        selected: (typeof rawResponses[item.id] === 'number' ? rawResponses[item.id] : null),
       })),
     }
   }
@@ -391,19 +432,24 @@ export default function PatientDetailPage() {
                                         <span className="text-gray-400 mr-1">{qi + 1}.</span>{item.text}
                                       </p>
                                       <div className="flex flex-wrap gap-1.5 pl-5">
-                                        {item.options.map(opt => (
-                                          <span
-                                            key={opt.value}
-                                            className={`text-xs rounded-full px-2.5 py-1 border ${
-                                              item.selected === opt.value
-                                                ? 'bg-navy-DEFAULT text-white border-navy-DEFAULT font-semibold'
-                                                : 'bg-white text-gray-500 border-gray-200'
-                                            }`}
-                                          >
-                                            {opt.label}
-                                          </span>
-                                        ))}
-                                        {item.selected === null && (
+                                        {item.options.map(opt => {
+                                          const isSel = item.selectedMulti
+                                            ? item.selectedMulti.includes(opt.value)
+                                            : item.selected === opt.value
+                                          return (
+                                            <span
+                                              key={opt.value}
+                                              className={`text-xs rounded-full px-2.5 py-1 border ${
+                                                isSel
+                                                  ? 'bg-navy-DEFAULT text-white border-navy-DEFAULT font-semibold'
+                                                  : 'bg-white text-gray-500 border-gray-200'
+                                              }`}
+                                            >
+                                              {opt.label}
+                                            </span>
+                                          )
+                                        })}
+                                        {(item.selectedMulti ? item.selectedMulti.length === 0 : item.selected === null) && (
                                           <span className="text-xs italic text-gray-400 py-1">No response</span>
                                         )}
                                       </div>
