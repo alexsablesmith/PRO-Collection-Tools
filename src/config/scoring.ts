@@ -513,9 +513,152 @@ export function scoreUWPain(responses: Record<string, number>): ScoreResult {
   }
 }
 
+// ── ADL Functional Assessment battery (Sept 2026) ─────────────────────────────
+// Three intact published short forms administered "ask once": three items are
+// shown only in the PF SF 20a step but feed more than one form's raw score
+//   PFA55, PFB26 → PF 20a + Neuro-QOL UE
+//   PFA34        → PF 20a + UE 7a
+// So each form is scored from its full published item set pulled out of the
+// merged response pool (see src/pages/api/survey/[token]/submit.ts), not just
+// the items rendered under its own step.
+//
+// Raw-score → T-score lookup tables are transcribed from the published manuals:
+//   PROMIS PF SF 20a, UE SF 7a — HealthMeasures PROMIS scoring manual
+//   Neuro-QOL UE Fine Motor/ADL SF — Neuro-QOL scoring manual, Table 7d
+// Item keys are the published PROMIS/Neuro-QOL Item IDs.
+
+export const PF_SF20A_ITEMS = [
+  'PFA16r1','PFA55','PFA34','PFA38','PFB26','PFC45r1','PFC46','PFA51','PFC36r1','PFB24',
+  'PFC37','PFA1','PFA3','PFC12','PFA11','PFA5','PFA12','PFB19r1','PFB22','PFA56',
+]
+export const UE_SF7A_ITEMS = ['PFA36','PFA34','PFA14r1','PFB13','PFB28r1','PFB34','PFM16r']
+export const NEUROQOL_UE_ITEMS = ['PFA35','PFA55','PFB26','PFA50','PFA43','NQUEX44','PFA40','PFB21']
+
+/** Item keys that make up each fixed-form raw score, in published order. */
+export const FORM_COMPOSITIONS: Record<string, string[]> = {
+  promis_pf_sf20a: PF_SF20A_ITEMS,
+  promis_ue_sf7a:  UE_SF7A_ITEMS,
+  neuroqol_ue_sf:  NEUROQOL_UE_ITEMS,
+}
+
+/** Forms whose score must be computed from the merged pool, not one step. */
+export const CROSS_FORM_SCORING_KEYS = new Set(Object.keys(FORM_COMPOSITIONS))
+
+// PROMIS Adult v2.0 Physical Function 20a Short Form Conversion Table.
+// Source: PROMIS Physical Function User Manual & Scoring Instructions
+// (24 Nov 2025), Appendix 1, p. 25. Items coded 5 = Without any difficulty ..
+// 1 = Cannot do / Unable; higher raw = better function. The published table
+// runs raw 20–99; an all-"without difficulty" respondent sums to 100, which
+// is clamped to the raw-99 ceiling by scoreFixedForm (maximum measurable).
+const PROMIS_PF_SF20A: PromisLookupTable = {
+  20: { t:  9.2, se: 3.2 }, 21: { t: 11.7, se: 2.5 }, 22: { t: 13.2, se: 2.3 },
+  23: { t: 14.3, se: 2.1 }, 24: { t: 15.3, se: 2.0 }, 25: { t: 16.2, se: 1.9 },
+  26: { t: 16.9, se: 1.9 }, 27: { t: 17.6, se: 1.8 }, 28: { t: 18.3, se: 1.8 },
+  29: { t: 18.9, se: 1.7 }, 30: { t: 19.5, se: 1.7 }, 31: { t: 20.1, se: 1.7 },
+  32: { t: 20.6, se: 1.7 }, 33: { t: 21.2, se: 1.6 }, 34: { t: 21.7, se: 1.6 },
+  35: { t: 22.2, se: 1.6 }, 36: { t: 22.6, se: 1.6 }, 37: { t: 23.1, se: 1.6 },
+  38: { t: 23.6, se: 1.6 }, 39: { t: 24.1, se: 1.5 }, 40: { t: 24.5, se: 1.5 },
+  41: { t: 24.9, se: 1.5 }, 42: { t: 25.4, se: 1.5 }, 43: { t: 25.8, se: 1.5 },
+  44: { t: 26.2, se: 1.5 }, 45: { t: 26.7, se: 1.5 }, 46: { t: 27.1, se: 1.4 },
+  47: { t: 27.5, se: 1.4 }, 48: { t: 27.9, se: 1.4 }, 49: { t: 28.3, se: 1.5 },
+  50: { t: 28.7, se: 1.5 }, 51: { t: 29.2, se: 1.4 }, 52: { t: 29.6, se: 1.4 },
+  53: { t: 30.0, se: 1.4 }, 54: { t: 30.3, se: 1.4 }, 55: { t: 30.7, se: 1.4 },
+  56: { t: 31.2, se: 1.4 }, 57: { t: 31.6, se: 1.4 }, 58: { t: 32.0, se: 1.4 },
+  59: { t: 32.4, se: 1.3 }, 60: { t: 32.7, se: 1.3 }, 61: { t: 33.1, se: 1.4 },
+  62: { t: 33.5, se: 1.4 }, 63: { t: 33.9, se: 1.4 }, 64: { t: 34.4, se: 1.4 },
+  65: { t: 34.8, se: 1.3 }, 66: { t: 35.1, se: 1.3 }, 67: { t: 35.5, se: 1.3 },
+  68: { t: 35.9, se: 1.4 }, 69: { t: 36.3, se: 1.4 }, 70: { t: 36.8, se: 1.4 },
+  71: { t: 37.2, se: 1.3 }, 72: { t: 37.6, se: 1.3 }, 73: { t: 38.0, se: 1.3 },
+  74: { t: 38.4, se: 1.4 }, 75: { t: 38.8, se: 1.4 }, 76: { t: 39.3, se: 1.4 },
+  77: { t: 39.7, se: 1.4 }, 78: { t: 40.2, se: 1.4 }, 79: { t: 40.6, se: 1.4 },
+  80: { t: 41.1, se: 1.5 }, 81: { t: 41.6, se: 1.5 }, 82: { t: 42.1, se: 1.5 },
+  83: { t: 42.6, se: 1.5 }, 84: { t: 43.1, se: 1.5 }, 85: { t: 43.7, se: 1.6 },
+  86: { t: 44.2, se: 1.6 }, 87: { t: 44.8, se: 1.6 }, 88: { t: 45.4, se: 1.7 },
+  89: { t: 46.1, se: 1.7 }, 90: { t: 46.8, se: 1.8 }, 91: { t: 47.5, se: 1.8 },
+  92: { t: 48.3, se: 1.9 }, 93: { t: 49.2, se: 2.1 }, 94: { t: 50.3, se: 2.2 },
+  95: { t: 51.5, se: 2.5 }, 96: { t: 53.0, se: 2.8 }, 97: { t: 54.9, se: 3.3 },
+  98: { t: 57.0, se: 3.6 }, 99: { t: 62.7, se: 5.7 },
+}
+
+// PROMIS Adult v2.1 Upper Extremity 7a Short Form Conversion Table.
+// Source: PROMIS Physical Function User Manual & Scoring Instructions
+// (24 Nov 2025), Appendix 1, p. 28. Raw 7–35, higher raw = better function.
+const PROMIS_UE_SF7A: PromisLookupTable = {
+   7: { t: 16.3, se: 3.0 },  8: { t: 19.3, se: 2.7 },  9: { t: 21.1, se: 2.5 },
+  10: { t: 22.6, se: 2.4 }, 11: { t: 23.9, se: 2.4 }, 12: { t: 25.0, se: 2.3 },
+  13: { t: 26.1, se: 2.3 }, 14: { t: 27.0, se: 2.3 }, 15: { t: 27.9, se: 2.3 },
+  16: { t: 28.8, se: 2.3 }, 17: { t: 29.7, se: 2.3 }, 18: { t: 30.5, se: 2.3 },
+  19: { t: 31.4, se: 2.3 }, 20: { t: 32.2, se: 2.3 }, 21: { t: 33.0, se: 2.3 },
+  22: { t: 33.9, se: 2.3 }, 23: { t: 34.7, se: 2.4 }, 24: { t: 35.6, se: 2.4 },
+  25: { t: 36.6, se: 2.5 }, 26: { t: 37.5, se: 2.6 }, 27: { t: 38.6, se: 2.6 },
+  28: { t: 39.7, se: 2.8 }, 29: { t: 40.9, se: 2.9 }, 30: { t: 42.3, se: 3.1 },
+  31: { t: 43.9, se: 3.4 }, 32: { t: 45.6, se: 3.6 }, 33: { t: 47.7, se: 3.9 },
+  34: { t: 50.9, se: 4.5 }, 35: { t: 58.2, se: 6.7 },
+}
+
+// Neuro-QOL Adult Upper Extremity Function – Fine Motor, ADL 8-item Short Form.
+// Source: Neuro-QoL User Manual v2 (24 Mar 2015), Appendix Table 7d.
+// Items coded 5 = Without any difficulty .. 1 = Unable to do; raw 8–40,
+// higher raw = better function.
+const NEUROQOL_UE_SF: PromisLookupTable = {
+   8: { t: 12.8, se: 2.0 },  9: { t: 13.7, se: 2.3 }, 10: { t: 14.7, se: 2.4 },
+  11: { t: 15.8, se: 2.5 }, 12: { t: 16.9, se: 2.4 }, 13: { t: 18.0, se: 2.4 },
+  14: { t: 19.0, se: 2.3 }, 15: { t: 19.9, se: 2.2 }, 16: { t: 20.8, se: 2.1 },
+  17: { t: 21.6, se: 2.1 }, 18: { t: 22.4, se: 2.1 }, 19: { t: 23.1, se: 2.0 },
+  20: { t: 23.9, se: 2.0 }, 21: { t: 24.6, se: 2.0 }, 22: { t: 25.3, se: 2.0 },
+  23: { t: 26.0, se: 2.0 }, 24: { t: 26.7, se: 2.0 }, 25: { t: 27.3, se: 2.0 },
+  26: { t: 28.0, se: 2.0 }, 27: { t: 28.7, se: 2.0 }, 28: { t: 29.5, se: 2.0 },
+  29: { t: 30.2, se: 2.1 }, 30: { t: 30.9, se: 2.1 }, 31: { t: 31.7, se: 2.1 },
+  32: { t: 32.6, se: 2.2 }, 33: { t: 33.5, se: 2.3 }, 34: { t: 34.5, se: 2.4 },
+  35: { t: 35.6, se: 2.7 }, 36: { t: 37.1, se: 3.2 }, 37: { t: 39.3, se: 4.2 },
+  38: { t: 41.2, se: 4.5 }, 39: { t: 43.7, se: 4.7 }, 40: { t: 53.8, se: 7.8 },
+}
+
+function scoreFixedForm(
+  responses: Record<string, number>,
+  keys: string[],
+  table: PromisLookupTable,
+  higherIsBetter: boolean,
+): ScoreResult {
+  const vals = keys.map(k => responses[k]).filter(v => v !== null && v !== undefined)
+  if (vals.length < keys.length) {
+    throw new Error(`All ${keys.length} items are required to score (got ${vals.length})`)
+  }
+  const rawScore = vals.reduce((a, b) => a + b, 0)
+  // Some published tables (e.g. PF 20a, which lists raw 20–99) omit the very
+  // top raw value; a maximal responder is clamped to the ceiling entry.
+  let entry = table[rawScore]
+  let clamped = false
+  if (!entry) {
+    const keys = Object.keys(table).map(Number)
+    const clampedRaw = Math.min(Math.max(rawScore, Math.min(...keys)), Math.max(...keys))
+    entry = table[clampedRaw]
+    clamped = clampedRaw !== rawScore
+    if (!entry) throw new Error(`No lookup entry for raw score ${rawScore}`)
+  }
+  const bands = higherIsBetter ? PROMIS_FUNCTION_BANDS : PROMIS_SYMPTOM_BANDS
+  const band = bands.find(b => entry!.t >= b.min && entry!.t <= b.max) ?? bands[bands.length - 1]
+  return {
+    rawScore,
+    tScore:         entry.t,
+    standardError:  entry.se,
+    severityLabel:  band.label,
+    interpretation: clamped
+      ? `${band.interpretation} (raw ${rawScore} exceeds the published table; scored at the maximum measurable value)`
+      : band.interpretation,
+  }
+}
+
+export const scorePromisPFSF20a = (r: Record<string, number>) => scoreFixedForm(r, PF_SF20A_ITEMS, PROMIS_PF_SF20A, true)
+export const scorePromisUESF7a  = (r: Record<string, number>) => scoreFixedForm(r, UE_SF7A_ITEMS,  PROMIS_UE_SF7A,  true)
+export const scoreNeuroQOLUE    = (r: Record<string, number>) => scoreFixedForm(r, NEUROQOL_UE_ITEMS, NEUROQOL_UE_SF, true)
+
 // ── Main scoring dispatcher ───────────────────────────────────────────────────
 
 export const SCORING_FUNCTIONS: Record<string, (r: Record<string, number>) => ScoreResult> = {
+  promis_pf_sf20a: scorePromisPFSF20a,
+  promis_ue_sf7a:  scorePromisUESF7a,
+  neuroqol_ue_sf:  scoreNeuroQOLUE,
   promis_physical_function_4a_v2: scorePhysicalFunction,
   promis_anxiety_4a_v1:           scoreAnxiety,
   promis_depression_4a_v1:        scoreDepression,
@@ -783,5 +926,29 @@ export const INSTRUMENT_META: Record<string, {
     isPromis:       true,   // T-scored (mean 50, SD 10) — surfaced like PROMIS
     maxScore:       80,
     citation:       'Amtmann D, Jensen MP, Turk D, et al. University of Washington Concerns About Pain (UW-CAP) Scale v1.0. 6-item short form. IRT-based T-score.',
+  },
+  promis_pf_sf20a: {
+    displayName:    'PROMIS Physical Function SF 20a',
+    shortName:      'PF 20a',
+    higherIsBetter: true,
+    isPromis:       true,
+    maxScore:       100,
+    citation:       'PROMIS Adult v2.0 Physical Function Short Form 20a. HealthMeasures raw-score-to-T-score table.',
+  },
+  promis_ue_sf7a: {
+    displayName:    'PROMIS Upper Extremity SF 7a',
+    shortName:      'UE 7a',
+    higherIsBetter: true,
+    isPromis:       true,
+    maxScore:       35,
+    citation:       'PROMIS Adult v2.1 Upper Extremity Short Form 7a. HealthMeasures raw-score-to-T-score conversion table (24 Nov 2025 manual).',
+  },
+  neuroqol_ue_sf: {
+    displayName:    'Neuro-QOL Upper Extremity (Fine Motor / ADL) SF',
+    shortName:      'Neuro-QOL UE',
+    higherIsBetter: true,
+    isPromis:       true,
+    maxScore:       40,
+    citation:       'Neuro-QOL Adult Upper Extremity Function – Fine Motor, ADL Short Form. Neuro-QOL scoring manual, Table 7d.',
   },
 }

@@ -13,6 +13,7 @@ const TYPE_BADGE: Record<string, { label: string; cls: string }> = {
   promis_cat:  { label: 'PROMIS CAT',   cls: 'bg-blue-100 text-blue-700'    },
   promis_fixed:{ label: 'PROMIS Fixed', cls: 'bg-indigo-100 text-indigo-700'},
   freeform:    { label: 'Freeform',     cls: 'bg-purple-100 text-purple-700' },
+  composite:   { label: 'Composite',    cls: 'bg-teal-100 text-teal-700'    },
 }
 
 export default function BatteriesPage() {
@@ -104,7 +105,7 @@ export default function BatteriesPage() {
   }
 
   // Group instruments for the picker
-  const standardInstruments  = instruments.filter(i => i.type === 'standard')
+  const standardInstruments  = instruments.filter(i => i.type === 'standard' || i.type === 'composite')
   const catInstruments        = instruments.filter(i => i.type === 'promis_cat')
   const freeformInstruments   = instruments.filter(i => i.type === 'freeform')
 

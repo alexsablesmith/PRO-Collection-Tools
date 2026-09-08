@@ -49,7 +49,79 @@ export type InstrumentScoringConfig = {
   severityBands?: { max?: number; label: string; interpretation: string }[]
 }
 
-export type InstrumentType = 'standard' | 'promis_cat' | 'promis_fixed' | 'freeform'
+export type InstrumentType = 'standard' | 'promis_cat' | 'promis_fixed' | 'freeform' | 'composite'
+
+// ── Composite instruments (block-based questionnaires, e.g. ADL + pain map) ──
+
+export type PainQuality = { id: string; label: string; color: string }
+
+/** One free-hand stroke on a body view; points are in body-SVG viewBox coords */
+export type DrawingStroke = { q: string; view: 'front' | 'back'; pts: [number, number][] }
+export type PainDrawing = { strokes: DrawingStroke[] }
+
+/**
+ * CHOIR Body Map selection: a map of endorsed region id -> pain-quality id.
+ * Region ids follow the CHOIR convention (front 101-136, back 201-238) and
+ * serialise to a comma-separated string compatible with CHOIR-DB.
+ */
+export type ChoirBodyMap = { regions: Record<string, string> }
+
+export type MatrixBlock = {
+  kind: 'matrix'
+  id: string
+  title: string
+  instructions?: string
+  options: { value: number; label: string; sublabel?: string }[]
+  sections: { header: string; items: { id: string; text: string }[] }[]
+}
+
+export type DrawingBlock = {
+  kind: 'drawing'
+  id: string
+  title: string
+  instructions: string
+  qualities: PainQuality[]
+}
+
+export type NrsBlock = {
+  kind: 'nrs'
+  id: string
+  prompt: string
+  minLabel: string
+  maxLabel: string
+}
+
+/** Segmented CHOIR body map: patient taps regions to endorse pain. */
+export type ChoirMapBlock = {
+  kind: 'choirmap'
+  id: string
+  title: string
+  instructions: string
+  /** Which anatomical map to show; defaults to 'male'. */
+  sex?: 'male' | 'female'
+  /** Optional pain-quality pens; when omitted the map is a binary selection. */
+  qualities?: PainQuality[]
+}
+
+/** Check-all-that-apply list (e.g. aids & devices in use). */
+export type ChecklistBlock = {
+  kind: 'checklist'
+  id: string
+  title: string
+  instructions?: string
+  options: { value: number; label: string }[]
+}
+
+export type QuestionBlock = MatrixBlock | DrawingBlock | NrsBlock | ChoirMapBlock | ChecklistBlock
+
+/** questions.<lang> payload for instruments with type 'composite' */
+export type CompositeQuestionDef = { title: string; blocks: QuestionBlock[] }
+
+/** Selected option values for a checklist block. */
+export type ChecklistValue = number[]
+
+/** A single answer: option value, NRS value, a pain drawing, a CHOIR body map, or a checklist */
+export type ResponseValue = number | PainDrawing | ChoirBodyMap | ChecklistValue
 
 export type Instrument = {
   id: string
@@ -86,7 +158,7 @@ export type SurveyDemographics = {
 
 /** Shape stored in survey_requests.partial_responses for save/resume */
 export type SurveyProgress = {
-  responses:    Record<string, Record<string, number>>
+  responses:    Record<string, Record<string, ResponseValue>>
   step:         number
   demographics: SurveyDemographics | null
   saved_at:     string
@@ -114,7 +186,7 @@ export type SurveyResponse = {
   survey_request_id: string
   patient_id: string
   instrument_id: string
-  raw_responses: Record<string, number>
+  raw_responses: Record<string, ResponseValue>
   raw_score: number | null
   t_score: number | null
   standard_error: number | null
@@ -224,6 +296,7 @@ export type Item = {
   icf_secondary_label:   string | null
   mh_code:               string | null
   mh_label:              string | null
+  adl_domain:            string | null
   body_region_primary:   string | null
   body_region_secondary: string | null
   response_format:       string | null

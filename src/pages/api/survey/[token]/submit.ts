@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getSupabaseAdmin } from '@/lib/supabase'
-import { scoreInstrument } from '@/config/scoring'
+import { scoreInstrument, CROSS_FORM_SCORING_KEYS, FORM_COMPOSITIONS } from '@/config/scoring'
 import type { SurveyDemographics, SurveyRequest } from '@/types/database'
 
 interface SubmitBody {
@@ -52,17 +52,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     .map(iid => (instruments ?? []).find(i => i.id === iid))
     .filter(Boolean)
 
+  // "Ask once" forms (e.g. PROMIS UE 7a, Neuro-QOL UE) score from items that
+  // were shown under a different step, so build a flat pool of every answer
+  // keyed by item id. Item ids are globally unique across these instruments.
+  const merged: Record<string, number> = {}
+  for (const inst of ordered) {
+    const instResp = responses[inst!.scoring_config_key] ?? {}
+    for (const [itemId, value] of Object.entries(instResp)) {
+      if (typeof value === 'number') merged[itemId] = value
+    }
+  }
+
   // Score everything first — any failure aborts before we write a single row
   const rows: Record<string, unknown>[] = []
   const failures: string[] = []
   for (const inst of ordered) {
     const key = inst!.scoring_config_key
     const instResp = responses[key] ?? {}
+    // Cross-form scores read from the merged pool; their stored raw_responses
+    // are the form's full published item set so the raw→T is reproducible.
+    const isCrossForm = CROSS_FORM_SCORING_KEYS.has(key)
+    const scoringInput = isCrossForm ? merged : instResp
+    const storedResponses = isCrossForm
+      ? Object.fromEntries(
+          (FORM_COMPOSITIONS[key] ?? [])
+            .filter(k => merged[k] !== undefined)
+            .map(k => [k, merged[k]]),
+        )
+      : instResp
     try {
-      const scored = scoreInstrument(key, instResp, inst!)
+      const scored = scoreInstrument(key, scoringInput, inst!)
       rows.push({
         instrument_id:   inst!.id,
-        raw_responses:   instResp,
+        raw_responses:   storedResponses,
         raw_score:       scored.rawScore,
         t_score:         scored.tScore ?? null,
         standard_error:  scored.standardError ?? null,
