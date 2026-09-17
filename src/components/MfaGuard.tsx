@@ -5,7 +5,10 @@ import { useAuth } from '@/hooks/useAuth'
 
 const MFA_REQUIRED = process.env.NEXT_PUBLIC_MFA_REQUIRED === 'true'
 
-const PUBLIC_PATHS = ['/login', '/mfa/enroll', '/mfa/verify', '/survey']
+// /account/setup is exempt so an invitee sets their password before being
+// sent to 2FA enrollment; setup then redirects into the app, where this
+// guard applies.
+const PUBLIC_PATHS = ['/login', '/mfa/enroll', '/mfa/verify', '/survey', '/account/setup']
 
 interface Props { children: ReactNode }
 
