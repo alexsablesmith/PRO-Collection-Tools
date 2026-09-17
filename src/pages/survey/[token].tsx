@@ -24,6 +24,8 @@ interface SurveyPayload {
   language:           'en' | 'es'
   demographics_entry: 'clinician' | 'patient'
   battery_name:       string
+  clinic_name:        string | null
+  clinic_logo_url:    string | null
   instruments:        SurveyInstrument[]
   progress:           SurveyProgress | null
 }
@@ -225,9 +227,15 @@ export default function SurveyPage() {
       <div className="min-h-screen bg-gray-50">
         <div style={{ backgroundColor: '#1F4E79' }} className="text-white px-4 py-4">
           <div className="max-w-2xl mx-auto">
-            <h1 className="font-semibold text-sm opacity-80">
-              {lang === 'es' ? 'Prolix Health — Encuesta de Salud' : 'Prolix Health — Health Survey'}
-            </h1>
+            <div className="flex items-center gap-2">
+              {payload?.clinic_logo_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={payload.clinic_logo_url} alt="" className="h-6 w-auto rounded bg-white p-0.5" />
+              )}
+              <h1 className="font-semibold text-sm opacity-80">
+                {payload?.clinic_name ?? 'Prolix Health'} — {lang === 'es' ? 'Encuesta de Salud' : 'Health Survey'}
+              </h1>
+            </div>
             <div className="mt-2 h-1.5 bg-white/20 rounded-full">
               <div className="h-1.5 bg-white rounded-full transition-all" style={{ width: `${progressPct}%` }} />
             </div>

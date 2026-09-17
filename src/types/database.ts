@@ -5,10 +5,31 @@ export type DeliveryMethod = 'email' | 'sms' | 'manual'
 export type ReportType = 'single' | 'longitudinal'
 export type DemographicsEntry = 'clinician' | 'patient'
 
+export type OrgStatus = 'active' | 'deactivated' | 'pending_deletion'
+export type OrgPlan = 'trial' | 'standard' | 'enterprise' | 'internal'
+
 export type Organization = {
   id: string
   name: string
   created_at: string
+  status: OrgStatus
+  deactivated_at: string | null
+  deletion_requested_at: string | null
+  deletion_scheduled_for: string | null
+  display_name: string | null
+  logo_url: string | null
+  contact_name: string | null
+  contact_email: string | null
+  contact_phone: string | null
+  timezone: string
+  default_language: Language
+  require_mfa: boolean
+  session_timeout_minutes: number | null
+  allowed_email_domains: string[]
+  plan: OrgPlan
+  trial_ends_at: string | null
+  seat_limit: number | null
+  billing_notes: string | null
 }
 
 export type UserProfile = {
@@ -18,6 +39,10 @@ export type UserProfile = {
   full_name: string | null
   is_active: boolean
   created_at: string
+  invited_at: string | null
+  invited_by: string | null
+  invite_accepted_at: string | null
+  deactivated_at: string | null
 }
 
 export type Patient = {
@@ -136,6 +161,12 @@ export type Instrument = {
   template_id: string | null
   questions?: Record<string, InstrumentQuestionDef> | null
   scoring_config?: InstrumentScoringConfig | null
+  /** null = global library instrument; set = private to that organization */
+  organization_id: string | null
+  license_required: boolean
+  license_notes: string | null
+  /** Enabled automatically for newly created organizations */
+  default_enabled: boolean
 }
 
 export type Battery = {
@@ -317,6 +348,105 @@ export type ClinicalEvent = {
   created_at:      string
 }
 
+// ── App admin ──────────────────────────────────────────────────
+
+export type LicenseStatus = 'none' | 'pending' | 'licensed'
+
+export type OrganizationInstrument = {
+  organization_id:    string
+  instrument_id:      string
+  enabled:            boolean
+  license_status:     LicenseStatus
+  license_reference:  string | null
+  license_expires_on: string | null
+  updated_at:         string
+  updated_by:         string | null
+}
+
+export type AdminAuditLog = {
+  id:                number
+  created_at:        string
+  actor_id:          string | null
+  actor_email:       string | null
+  actor_role:        string | null
+  action:            string
+  target_type:       string | null
+  target_id:         string | null
+  organization_id:   string | null
+  organization_name: string | null
+  details:           Record<string, unknown>
+  ip_address:        string | null
+  user_agent:        string | null
+}
+
+export type EmailStatus = 'sent' | 'delivered' | 'delivery_delayed' | 'bounced' | 'complained' | 'failed'
+
+export type EmailLog = {
+  id:                        string
+  created_at:                string
+  updated_at:                string
+  organization_id:           string | null
+  provider_message_id:       string | null
+  email_type:                string
+  recipient:                 string
+  subject:                   string | null
+  status:                    EmailStatus
+  status_detail:             string | null
+  related_user_id:           string | null
+  related_survey_request_id: string | null
+}
+
+export type NoticeSeverity = 'info' | 'warning' | 'critical'
+
+export type PlatformNotice = {
+  id:         string
+  message:    string
+  severity:   NoticeSeverity
+  starts_at:  string
+  ends_at:    string | null
+  is_active:  boolean
+  created_by: string | null
+  created_at: string
+}
+
+export type BatteryTemplate = {
+  id:             string
+  name:           string
+  instrument_ids: string[]
+  is_default:     boolean
+  created_by:     string | null
+  created_at:     string
+}
+
+export type OrgStats = {
+  organization_id:       string
+  active_users:          number
+  pending_invites:       number
+  deactivated_users:     number
+  patients:              number
+  surveys_sent:          number
+  surveys_sent_30d:      number
+  surveys_completed:     number
+  surveys_completed_30d: number
+  last_survey_at:        string | null
+  last_sign_in_at:       string | null
+}
+
+export type AdminUserRow = {
+  id:                 string
+  organization_id:    string
+  role:               Role
+  full_name:          string | null
+  email:              string | null
+  is_active:          boolean
+  created_at:         string
+  invited_at:         string | null
+  invite_accepted_at: string | null
+  deactivated_at:     string | null
+  last_sign_in_at:    string | null
+  mfa_enrolled:       boolean
+}
+
 // ── Joined types used in the UI ───────────────────────────────
 export type PatientWithHistory = Patient & {
   last_survey_date: string | null
@@ -350,6 +480,11 @@ export type Database = {
       export_audit_log:            Table<Record<string, unknown>>
       items:                       Table<Item>
       clinical_events:             Table<ClinicalEvent>
+      organization_instruments:    Table<OrganizationInstrument>
+      admin_audit_log:             Table<AdminAuditLog>
+      email_log:                   Table<EmailLog>
+      platform_notices:            Table<PlatformNotice>
+      battery_templates:           Table<BatteryTemplate>
     }
     Views: Record<string, never>
     Functions: {
@@ -360,6 +495,22 @@ export type Database = {
       delete_patient: {
         Args:    { p_patient_id: string }
         Returns: undefined
+      }
+      admin_org_stats: {
+        Args:    Record<string, never>
+        Returns: OrgStats[]
+      }
+      admin_list_users: {
+        Args:    { p_org?: string | null }
+        Returns: AdminUserRow[]
+      }
+      admin_revoke_sessions: {
+        Args:    { p_user_ids: string[] }
+        Returns: number
+      }
+      admin_purge_organization: {
+        Args:    { p_org: string }
+        Returns: { counts: Record<string, number>; user_ids: string[] }
       }
     }
     Enums: Record<string, never>

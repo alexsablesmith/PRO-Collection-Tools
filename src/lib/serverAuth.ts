@@ -1,11 +1,13 @@
 import type { NextApiRequest } from 'next'
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { SupabaseClient, User } from '@supabase/supabase-js'
 import { getSupabaseAdmin } from '@/lib/supabase'
-import type { Database, UserProfile, Role } from '@/types/database'
+import type { Database, UserProfile, Organization, Role } from '@/types/database'
 
 export interface AuthedRequest {
-  profile: UserProfile
-  admin:   SupabaseClient<Database>
+  profile:      UserProfile
+  organization: Organization
+  user:         User
+  admin:        SupabaseClient<Database>
 }
 
 export interface AuthFailure {
@@ -45,8 +47,9 @@ export async function authenticateRequest(
   }
 
   const accessToken = authHeader.slice(7)
+  const hasAal2 = getAal(accessToken) === 'aal2'
 
-  if (MFA_REQUIRED && getAal(accessToken) !== 'aal2') {
+  if (MFA_REQUIRED && !hasAal2) {
     return { status: 403, error: 'Two-factor authentication required' }
   }
 
@@ -66,11 +69,31 @@ export async function authenticateRequest(
     return { status: 403, error: 'No active user profile' }
   }
 
+  const { data: organization } = await admin
+    .from('organizations')
+    .select('*')
+    .eq('id', profile.organization_id)
+    .maybeSingle()
+
+  if (!organization) {
+    return { status: 403, error: 'No organization' }
+  }
+
+  // App admins are exempt from their own org's status so they can't lock
+  // themselves out (mirrors caller_has_access() in the database).
+  if (organization.status !== 'active' && profile.role !== 'app_admin') {
+    return { status: 403, error: 'Your organization has been deactivated' }
+  }
+
+  if (organization.require_mfa && !hasAal2) {
+    return { status: 403, error: 'Two-factor authentication required' }
+  }
+
   if (allowedRoles && !allowedRoles.includes(profile.role)) {
     return { status: 403, error: 'Insufficient permissions' }
   }
 
-  return { profile: profile as UserProfile, admin }
+  return { profile: profile as UserProfile, organization: organization as Organization, user, admin }
 }
 
 export function isAuthFailure(r: AuthedRequest | AuthFailure): r is AuthFailure {

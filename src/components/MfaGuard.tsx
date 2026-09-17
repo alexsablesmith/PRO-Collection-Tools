@@ -10,11 +10,12 @@ const PUBLIC_PATHS = ['/login', '/mfa/enroll', '/mfa/verify', '/survey']
 interface Props { children: ReactNode }
 
 export default function MfaGuard({ children }: Props) {
-  const { user, loading } = useAuth()
+  const { user, organization, loading } = useAuth()
   const router = useRouter()
+  const mfaRequired = MFA_REQUIRED || !!organization?.require_mfa
 
   useEffect(() => {
-    if (!MFA_REQUIRED) return
+    if (!mfaRequired) return
     if (loading) return
     if (!user) return
     const path = router.pathname
@@ -34,7 +35,7 @@ export default function MfaGuard({ children }: Props) {
     }
 
     checkMfa()
-  }, [user, loading, router.pathname])
+  }, [user, loading, router.pathname, mfaRequired])
 
   return <>{children}</>
 }

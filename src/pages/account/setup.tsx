@@ -45,16 +45,23 @@ export default function AccountSetupPage() {
 
     if (updateErr) { setError(updateErr.message); setSaving(false); return }
 
-    // Mark profile active and set full_name
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      await supabase.from('user_profiles').update({
-        full_name: fullName.trim(),
-        is_active: true,
-      }).eq('id', user.id)
+    // Mark the invite accepted and set full_name (server-side: account
+    // status can't be changed from the browser)
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('/api/account/activate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token ?? ''}` },
+      body: JSON.stringify({ full_name: fullName.trim() }),
+    })
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}))
+      setError(json.error ?? 'Could not activate your account.')
+      setSaving(false)
+      return
     }
 
-    router.replace('/patients')
+    // Reload so the auth context picks up the now-active profile
+    window.location.replace('/patients')
   }
 
   return (

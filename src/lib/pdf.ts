@@ -17,7 +17,7 @@ interface VisitData {
 export async function buildPatientPDF(
   patient: Patient,
   visits: VisitData[],
-  options?: { includeResponses?: boolean }
+  options?: { includeResponses?: boolean; clinicName?: string | null }
 ) {
   // Dynamically import jsPDF (browser only)
   const { jsPDF } = await import('jspdf')
@@ -128,6 +128,10 @@ export async function buildPatientPDF(
   pdf.text('PROLIX HEALTH',PW/2,y,{align:'center'}); y+=20
   pdf.setFont('helvetica','normal'); pdf.setFontSize(12); setClr(BLUE)
   pdf.text('Patient-Reported Outcomes Report',PW/2,y,{align:'center'}); y+=20
+  if (options?.clinicName) {
+    pdf.setFontSize(10); setClr(GRAY)
+    pdf.text(safe(options.clinicName),PW/2,y-4,{align:'center'}); y+=12
+  }
 
   // Demographics
   const DC=[110,146,110,146], demoTW=DC.reduce((a,b)=>a+b,0), DEMO_H=20

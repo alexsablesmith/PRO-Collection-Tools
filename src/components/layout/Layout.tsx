@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useAuth } from '@/hooks/useAuth'
 import clsx from 'clsx'
+import NoticeBanner from '@/components/NoticeBanner'
+import SessionTimeout from '@/components/SessionTimeout'
 
 const NAV_ITEMS = [
   { href: '/patients',            label: 'Patients',       roles: ['app_admin','org_admin','clinical_user','read_only'] },
@@ -13,15 +15,36 @@ const NAV_ITEMS = [
   { href: '/admin/instruments',   label: 'Instruments',    roles: ['app_admin','org_admin','clinical_user'] },
   { href: '/admin/item-bank',     label: 'Item Bank',      roles: ['app_admin','org_admin','clinical_user'] },
   { href: '/admin/users',         label: 'Users',          roles: ['app_admin','org_admin'] },
-  { href: '/admin/organizations', label: 'Organizations',  roles: ['app_admin'] },
+  { href: '/admin',               label: 'App Admin',      roles: ['app_admin'] },
 ]
 
 export default function Layout({ children }: { children: ReactNode }) {
-  const { profile, signOut } = useAuth()
+  const { profile, organization, signOut } = useAuth()
   const router = useRouter()
+
+  const blockedReason =
+    profile && !profile.is_active && profile.deactivated_at
+      ? 'Your account has been deactivated.'
+      : profile && organization && organization.status !== 'active' && profile.role !== 'app_admin'
+        ? `${organization.name} has been deactivated.`
+        : null
+
+  if (blockedReason) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="card max-w-md text-center">
+          <h1 className="text-lg font-semibold text-gray-900 mb-2">Access unavailable</h1>
+          <p className="text-gray-600 text-sm mb-6">{blockedReason} Contact your administrator if you think this is a mistake.</p>
+          <button onClick={() => signOut()} className="btn-primary text-sm">Sign out</button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SessionTimeout />
+      <NoticeBanner />
       <header style={{ backgroundColor: '#1F4E79' }} className="text-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">

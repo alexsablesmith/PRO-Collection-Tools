@@ -3,6 +3,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { useInstrumentAccess } from '@/hooks/useInstrumentAccess'
 import type { Battery, Instrument, SurveyTemplate } from '@/types/database'
 import { format, parseISO } from 'date-fns'
 import InstrumentPreviewModal from '@/components/InstrumentPreviewModal'
@@ -18,6 +19,7 @@ const TYPE_BADGE: Record<string, { label: string; cls: string }> = {
 
 export default function BatteriesPage() {
   const { profile } = useAuth()
+  const { canUse } = useInstrumentAccess()
   const [batteries,   setBatteries]   = useState<Battery[]>([])
   const [instruments, setInstruments] = useState<Instrument[]>([])
   const [templates,   setTemplates]   = useState<SurveyTemplate[]>([])
@@ -64,6 +66,7 @@ export default function BatteriesPage() {
       scoring_config_key: 'freeform',
       languages:          ['en'],
       is_active:          true,
+      organization_id:    profile!.organization_id,
     }).select('id').single()
 
     if (error || !data) { console.error('Failed to create instrument row for template', error); return null }
@@ -105,9 +108,11 @@ export default function BatteriesPage() {
   }
 
   // Group instruments for the picker
-  const standardInstruments  = instruments.filter(i => i.type === 'standard' || i.type === 'composite')
-  const catInstruments        = instruments.filter(i => i.type === 'promis_cat')
-  const freeformInstruments   = instruments.filter(i => i.type === 'freeform')
+  // Only instruments this organization has access to can go into a new battery
+  const usable                = instruments.filter(i => canUse(i.id))
+  const standardInstruments  = usable.filter(i => i.type === 'standard' || i.type === 'composite')
+  const catInstruments        = usable.filter(i => i.type === 'promis_cat')
+  const freeformInstruments   = usable.filter(i => i.type === 'freeform')
 
   // All selectable items: instrument IDs for DB instruments, 'tmpl_<id>' for templates not yet in instruments
   const linkedTemplateIds = new Set(freeformInstruments.map(i => i.template_id).filter(Boolean))
@@ -206,6 +211,11 @@ export default function BatteriesPage() {
                       <p className="text-xs text-gray-400 mt-0.5">
                         Created {bat.created_at ? format(parseISO(bat.created_at), 'MMM d, yyyy') : ''}
                       </p>
+                      {bat.is_active && !bat.instrument_ids.every(canUse) && (
+                        <p className="text-xs text-amber-700 bg-amber-50 rounded px-2 py-1 mt-1.5 inline-block">
+                          Includes an instrument your organization no longer has access to, so it can't be sent.
+                        </p>
+                      )}
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         {batInstruments.map((inst, i) => {
                           const badge = TYPE_BADGE[inst.type] ?? TYPE_BADGE.standard

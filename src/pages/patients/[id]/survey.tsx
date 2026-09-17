@@ -3,12 +3,14 @@ import { useRouter } from 'next/router'
 import Head from 'next/head'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { useInstrumentAccess } from '@/hooks/useInstrumentAccess'
 import type { Patient, Battery } from '@/types/database'
 import { format, parseISO } from 'date-fns'
 
 export default function SendSurveyPage() {
   const router = useRouter()
-  const { profile } = useAuth()
+  const { profile, organization } = useAuth()
+  const { ready: accessReady, canUse } = useInstrumentAccess()
   const { id } = router.query as { id: string }
 
   const [patient,   setPatient]   = useState<Patient | null>(null)
@@ -26,17 +28,23 @@ export default function SendSurveyPage() {
   })
 
   useEffect(() => {
-    if (id) loadData()
-  }, [id])
+    if (id && accessReady) loadData()
+  }, [id, accessReady])
 
   async function loadData() {
     const [{ data: pat }, { data: bats }] = await Promise.all([
       supabase.from('patients').select('*').eq('id', id).single(),
       supabase.from('batteries').select('*').eq('organization_id', profile?.organization_id ?? '').eq('is_active', true),
     ])
+    // Hide batteries containing instruments the org no longer has access to
+    const usable = (bats ?? []).filter(b => b.instrument_ids.every(canUse))
     setPatient(pat)
-    setBatteries(bats ?? [])
-    if (bats && bats.length > 0) setForm(f => ({ ...f, battery_id: bats[0].id }))
+    setBatteries(usable)
+    setForm(f => ({
+      ...f,
+      battery_id: usable[0]?.id ?? '',
+      language:   (pat?.preferred_language ?? organization?.default_language ?? 'en') as 'en' | 'es',
+    }))
     setLoading(false)
   }
 

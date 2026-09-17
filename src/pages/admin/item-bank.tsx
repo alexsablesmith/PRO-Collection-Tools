@@ -112,6 +112,8 @@ export default function ItemBankPage() {
       // output is each question with the selected response (plus the ADL
       // matrix, which joins item-level answers back to ICF metadata).
       scoring_config:     { type: 'none' },
+      // Custom surveys are private to the organization that built them
+      organization_id:    profile!.organization_id,
     })
 
     if (error) {

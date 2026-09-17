@@ -18,7 +18,7 @@ interface VisitData {
 
 export default function ReportPage() {
   const router = useRouter()
-  const { profile } = useAuth()
+  const { profile, organization } = useAuth()
   const { id } = router.query as { id: string }
 
   const [patient,          setPatient]          = useState<Patient | null>(null)
@@ -87,7 +87,10 @@ export default function ReportPage() {
     // silently fails or the wrong error surfaces).
     try {
       const { buildPatientPDF } = await import('@/lib/pdf')
-      await buildPatientPDF(patient, selectedVisits, { includeResponses })
+      await buildPatientPDF(patient, selectedVisits, {
+        includeResponses,
+        clinicName: organization ? (organization.display_name || organization.name) : null,
+      })
     } catch (e) {
       console.error('PDF generation error:', e)
       const detail = e instanceof Error ? e.message : String(e)

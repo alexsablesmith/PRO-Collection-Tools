@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { authenticateRequest, isAuthFailure } from '@/lib/serverAuth'
+import { logAdminAction, loadManageableUser, revokeSessions } from '@/lib/adminServer'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
@@ -7,36 +8,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const auth = await authenticateRequest(req, ['app_admin', 'org_admin'])
   if (isAuthFailure(auth)) return res.status(auth.status).json({ error: auth.error })
 
-  const { user_id } = req.body as { user_id: string }
-  if (!user_id) return res.status(400).json({ error: 'user_id is required' })
-
-  if (user_id === auth.profile.id) {
-    return res.status(400).json({ error: 'You cannot delete your own account' })
-  }
-
+  const loaded = await loadManageableUser(auth, (req.body as { user_id?: string }).user_id)
+  if ('error' in loaded) return res.status(loaded.status).json({ error: loaded.error })
+  const target = loaded.user
   const admin = auth.admin
-  const { data: target } = await admin
-    .from('user_profiles')
-    .select('*')
-    .eq('id', user_id)
-    .maybeSingle()
-
-  if (!target) return res.status(404).json({ error: 'User not found' })
-
-  // org_admins can only delete users within their own organization, and never an app_admin
-  if (auth.profile.role === 'org_admin') {
-    if (target.organization_id !== auth.profile.organization_id) {
-      return res.status(403).json({ error: 'You can only delete users in your own organization' })
-    }
-    if (target.role === 'app_admin') {
-      return res.status(403).json({ error: 'You cannot delete an App Admin' })
-    }
-  }
 
   try {
-    await admin.from('user_profiles').delete().eq('id', user_id)
+    const { data: authUser } = await admin.auth.admin.getUserById(target.id)
+    await revokeSessions(auth, [target.id])
 
-    const { error: authError } = await admin.auth.admin.deleteUser(user_id)
+    const { error: profileError } = await admin.from('user_profiles').delete().eq('id', target.id)
+    if (profileError) {
+      return res.status(409).json({
+        error: `This user can't be deleted because records reference them (${profileError.message}). Deactivate them instead.`,
+      })
+    }
+
+    const { error: authError } = await admin.auth.admin.deleteUser(target.id)
+
+    await logAdminAction(auth, req, {
+      action:          'user.deleted',
+      target_type:     'user',
+      target_id:       target.id,
+      organization_id: target.organization_id,
+      details: {
+        email: authUser.user?.email ?? null,
+        full_name: target.full_name,
+        role: target.role,
+        auth_delete_error: authError?.message ?? null,
+      },
+    })
+
     if (authError) {
       return res.status(500).json({ error: `Profile removed but auth deletion failed: ${authError.message}` })
     }
