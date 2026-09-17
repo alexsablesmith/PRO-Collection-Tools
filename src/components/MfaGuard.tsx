@@ -7,8 +7,8 @@ const MFA_REQUIRED = process.env.NEXT_PUBLIC_MFA_REQUIRED === 'true'
 
 // /account/setup is exempt so an invitee sets their password before being
 // sent to 2FA enrollment; setup then redirects into the app, where this
-// guard applies.
-const PUBLIC_PATHS = ['/login', '/mfa/enroll', '/mfa/verify', '/survey', '/account/setup']
+// guard applies. /account/reset-password runs its own 2FA check.
+const PUBLIC_PATHS = ['/login', '/mfa/enroll', '/mfa/verify', '/survey', '/account/setup', '/account/reset-password', '/forgot-password']
 
 interface Props { children: ReactNode }
 

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { useAuth } from '@/hooks/useAuth'
 import Head from 'next/head'
+import Link from 'next/link'
 import NoticeBanner from '@/components/NoticeBanner'
 
 export default function LoginPage() {
@@ -55,7 +56,10 @@ export default function LoginPage() {
                 />
               </div>
               <div>
-                <label className="label">Password</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="label mb-0">Password</label>
+                  <Link href="/forgot-password" className="text-xs text-blue-600 hover:text-blue-800">Forgot password?</Link>
+                </div>
                 <input
                   type="password" required autoComplete="current-password"
                   value={password} onChange={e => setPassword(e.target.value)}
