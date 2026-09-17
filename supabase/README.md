@@ -40,6 +40,7 @@ control and code review.
 | `20260719000006_custom_surveys_no_score.sql` | Flips pre-existing custom surveys to scoring type "none" (no composite score) | Correct display of custom surveys created before 2026-07-19 |
 | `20260907000008_adl_battery_seed.sql` | Seeds the ADL Functional Assessment battery instruments | ADL battery |
 | `20260916000009_admin_dashboard.sql` | Org lifecycle/settings/plan columns, user invite lifecycle, per-org instrument access + licensing, admin audit log, email log, notices, default batteries, and database-level enforcement of deactivation and per-org MFA | App Admin dashboard (`/admin`) |
+| `20260916000010_admin_service_role_grants.sql` | Grants the service role access to the new admin tables (and `items`); this project doesn't grant new tables to it by default | App Admin dashboard API routes |
 
 ## After applying `20260916000009_admin_dashboard.sql`
 
