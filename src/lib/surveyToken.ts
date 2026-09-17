@@ -41,6 +41,24 @@ export async function validateSurveyToken(
     return { status: 410, error: 'This survey link has expired. Please contact your clinic for a new one.' }
   }
 
+  // Links from a deactivated organization are paused, not revoked: they work
+  // again if the organization is reactivated before they expire.
+  const { data: patient } = await admin
+    .from('patients')
+    .select('organization_id')
+    .eq('id', request.patient_id)
+    .maybeSingle()
+  if (patient) {
+    const { data: org } = await admin
+      .from('organizations')
+      .select('status')
+      .eq('id', patient.organization_id)
+      .maybeSingle()
+    if (org && org.status !== 'active') {
+      return { status: 410, error: 'This survey is no longer available. Please contact your clinic.' }
+    }
+  }
+
   return { request: request as SurveyRequest, admin }
 }
 

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { useAuth } from '@/hooks/useAuth'
 import Head from 'next/head'
+import NoticeBanner from '@/components/NoticeBanner'
 
 export default function LoginPage() {
   const { signIn } = useAuth()
@@ -23,11 +24,12 @@ export default function LoginPage() {
   return (
     <>
       <Head><title>Sign In — Prolix Health</title></Head>
+      <NoticeBanner />
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 px-4">
         <div className="w-full max-w-md">
           {/* Logo / title */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-navy-DEFAULT text-white text-2xl font-bold mb-4">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-navy text-white text-2xl font-bold mb-4">
               Px
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Prolix Health</h1>
@@ -37,6 +39,11 @@ export default function LoginPage() {
           {/* Form */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
             <h2 className="text-lg font-semibold text-gray-800 mb-6">Sign in to your account</h2>
+            {router.query.reason === 'timeout' && (
+              <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg px-3 py-2 text-sm mb-4">
+                You were signed out after a period of inactivity.
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="label">Email address</label>
@@ -65,7 +72,7 @@ export default function LoginPage() {
 
               <button
                 type="submit" disabled={loading}
-                className="w-full bg-navy-DEFAULT text-white font-semibold py-2.5 rounded-lg
+                className="w-full bg-navy text-white font-semibold py-2.5 rounded-lg
                            hover:bg-navy-light transition-colors disabled:opacity-50 mt-2"
               >
                 {loading ? 'Signing in...' : 'Sign in'}

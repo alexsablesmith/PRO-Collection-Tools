@@ -6,14 +6,14 @@ import { useAuth } from '@/hooks/useAuth'
 import type { Language } from '@/types/database'
 
 export default function NewPatientPage() {
-  const { profile } = useAuth()
+  const { profile, organization } = useAuth()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState('')
 
   const [form, setForm] = useState({
     first_name: '', last_name: '', date_of_birth: '',
-    gender: '', preferred_language: 'en', phone: '', email: '',
+    gender: '', preferred_language: organization?.default_language ?? 'en', phone: '', email: '',
   })
 
   function set(field: string, value: string) {

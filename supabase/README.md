@@ -38,3 +38,31 @@ control and code review.
 | `20260706000004_new_instruments_seed.sql` | Registers ODI, NDI, DASH, QuickDASH, KOOS, HOOS, WOMAC, LEFS, FAAM, HAQ-DI, UW Pain Concerns in the instruments table | Administering the new instruments |
 | `20260706000005_instruments_write_policy.sql` | RLS policy letting clinical-role users insert/update instruments | Custom survey builder, freeform batteries, admin instrument creation |
 | `20260719000006_custom_surveys_no_score.sql` | Flips pre-existing custom surveys to scoring type "none" (no composite score) | Correct display of custom surveys created before 2026-07-19 |
+| `20260907000008_adl_battery_seed.sql` | Seeds the ADL Functional Assessment battery instruments | ADL battery |
+| `20260916000009_admin_dashboard.sql` | Org lifecycle/settings/plan columns, user invite lifecycle, per-org instrument access + licensing, admin audit log, email log, notices, default batteries, and database-level enforcement of deactivation and per-org MFA | App Admin dashboard (`/admin`) |
+| `20260916000010_admin_service_role_grants.sql` | Grants the service role access to the new admin tables (and `items`); this project doesn't grant new tables to it by default | App Admin dashboard API routes |
+
+## After applying `20260916000009_admin_dashboard.sql`
+
+1. **Deploy the app release that ships with it at the same time.** The migration blocks
+   browsers from changing `user_profiles.is_active`/`role`/`organization_id`
+   directly, and the new account-setup and Users pages go through `/api/*` instead.
+2. **Check every PHI table has RLS enabled.** Deactivation is enforced by a
+   restrictive `require_active_account` policy added to every table with RLS on;
+   a table with RLS off would not get it:
+   ```sql
+   select relname from pg_class c join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public' and c.relkind = 'r' and not c.relrowsecurity;
+   ```
+   Any table created later needs RLS and that policy too (copy the loop at the end
+   of section 7 in the migration).
+3. **Review custom instrument owners** under Admin → Instruments & Defaults. The
+   migration assigns custom surveys to the one organization whose batteries use
+   them; anything ambiguous stays global until you assign it.
+4. **Flag license-required instruments** on the same page. Nothing is flagged by
+   default; check each copyright holder's terms for commercial software use.
+5. **Connect email delivery tracking:** in Resend → Webhooks, add
+   `https://<your site>/api/webhooks/resend` with the delivered,
+   delivery_delayed, bounced, and complained events, and set
+   `RESEND_WEBHOOK_SECRET` in Vercel.
+

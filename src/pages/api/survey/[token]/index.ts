@@ -16,11 +16,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { request, admin } = v
 
   const [{ data: battery }, { data: instruments }] = await Promise.all([
-    admin.from('batteries').select('id, name, instrument_ids').eq('id', request.battery_id).single(),
+    admin.from('batteries').select('id, name, instrument_ids, organization_id').eq('id', request.battery_id).single(),
     admin.from('instruments').select('id, code, name, type, scoring_config_key, scoring_config, questions').eq('is_active', true),
   ])
 
   if (!battery) return res.status(404).json({ error: 'This survey is no longer available.' })
+
+  const { data: org } = await admin
+    .from('organizations')
+    .select('name, display_name, logo_url')
+    .eq('id', battery.organization_id)
+    .maybeSingle()
 
   const ordered = battery.instrument_ids
     .map(iid => (instruments ?? []).find(i => i.id === iid))
@@ -30,6 +36,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     language:           request.language,
     demographics_entry: request.demographics_entry,
     battery_name:       battery.name,
+    clinic_name:        org ? (org.display_name || org.name) : null,
+    clinic_logo_url:    org?.logo_url ?? null,
     instruments:        ordered,
     progress:           request.partial_responses ?? null,
   })

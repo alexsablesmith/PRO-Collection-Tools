@@ -1,12 +1,14 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
-import type { UserProfile } from '@/types/database'
+import type { Organization, UserProfile } from '@/types/database'
 
 interface AuthContextType {
   user:    User | null
   session: Session | null
   profile: UserProfile | null
+  /** The user's own organization (settings, branding, status) */
+  organization: Organization | null
   loading: boolean
   signIn:  (email: string, password: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
@@ -18,6 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user,    setUser]    = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [organization, setOrganization] = useState<Organization | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -39,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clearTimeout(forceEnd)
         setLoading(false)
         if (session?.user) loadProfile(session.user.id)
-        else setProfile(null)
+        else { setProfile(null); setOrganization(null) }
       }
     )
     return () => {
@@ -55,7 +58,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .select('*')
         .eq('id', userId)
         .maybeSingle()
-      if (data) setProfile(data as UserProfile)
+      if (data) {
+        setProfile(data as UserProfile)
+        const { data: org } = await supabase
+          .from('organizations')
+          .select('*')
+          .eq('id', data.organization_id)
+          .maybeSingle()
+        setOrganization((org as Organization | null) ?? null)
+      }
     } catch (e) {
       console.error('Profile load error:', e)
     }
@@ -69,10 +80,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signOut() {
     await supabase.auth.signOut()
     setProfile(null)
+    setOrganization(null)
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, profile, organization, loading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   )
