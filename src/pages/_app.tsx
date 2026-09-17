@@ -6,7 +6,7 @@ import MfaGuard from '@/components/MfaGuard'
 import '@/styles/globals.css'
 import { useEffect } from 'react'
 
-const PUBLIC_ROUTES = ['/login', '/survey/[token]', '/account/setup']
+const PUBLIC_ROUTES = ['/login', '/survey/[token]', '/account/setup', '/account/reset-password', '/forgot-password']
 
 function AppContent({ Component, pageProps }: AppProps) {
   const { user, loading } = useAuth()

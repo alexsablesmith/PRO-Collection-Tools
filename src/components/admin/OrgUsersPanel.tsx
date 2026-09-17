@@ -230,6 +230,11 @@ export default function OrgUsersPanel({
                                   Sign out
                                 </button>
                               )}
+                              {u.is_active && (
+                                <button onClick={() => run('/api/admin/users/send-password-reset', { user_id: u.id }, `Password reset email sent to ${u.email}.`)} className="text-xs text-gray-600 hover:text-gray-900">
+                                  Reset password
+                                </button>
+                              )}
                               <button
                                 onClick={() => setConfirm({
                                   title: `Reset 2FA for ${name(u)}?`, label: 'Reset 2FA',
