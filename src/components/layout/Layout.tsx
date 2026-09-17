@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useAuth } from '@/hooks/useAuth'
@@ -28,6 +28,14 @@ export default function Layout({ children }: { children: ReactNode }) {
       : profile && organization && organization.status !== 'active' && profile.role !== 'app_admin'
         ? `${organization.name} has been deactivated.`
         : null
+
+  // An invitee who reached the app without finishing account setup (e.g. the
+  // session from their invite link) still needs to set a password.
+  const setupPending = !!profile && !profile.is_active && !profile.invite_accepted_at
+  useEffect(() => {
+    if (setupPending) router.replace('/account/setup')
+  }, [setupPending])
+  if (setupPending) return null
 
   if (blockedReason) {
     return (
