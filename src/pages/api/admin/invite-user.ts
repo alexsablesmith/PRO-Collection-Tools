@@ -73,12 +73,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: linkError?.message ?? 'Failed to generate invite link' })
     }
 
-    // Upsert profile row (creates if new, updates role/org if existing)
+    // If this email already belongs to an active user, refuse rather than
+    // silently reassigning their org/role and deactivating their account.
+    const { data: existingProfile } = await admin
+      .from('user_profiles')
+      .select('*')
+      .eq('id', linkData.user.id)
+      .maybeSingle()
+
+    if (existingProfile?.is_active) {
+      let orgName = existingProfile.organization_id
+      const { data: org } = await admin
+        .from('organizations')
+        .select('name')
+        .eq('id', existingProfile.organization_id)
+        .maybeSingle()
+      if (org?.name) orgName = org.name
+
+      return res.status(409).json({
+        error: `This email already belongs to an active user in "${orgName}". Change their role or organization from the Users page instead of inviting them again.`,
+      })
+    }
+
+    // Upsert profile row: creates it if new, or updates role/org if a
+    // pending (never-activated) profile already exists. Preserve any
+    // full_name already on file rather than clobbering it.
     await admin.from('user_profiles').upsert({
       id: linkData.user.id,
       organization_id,
       role: role as Role,
-      full_name: null,
+      full_name: existingProfile?.full_name ?? null,
       is_active: false,
     }, { onConflict: 'id' })
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
 import { supabase } from '@/lib/supabase'
@@ -16,13 +16,27 @@ export default function MfaEnrollPage() {
   const [loading,   setLoading]   = useState(true)
   const [verifying, setVerifying] = useState(false)
 
+  // Guards against React Strict Mode's double effect-invocation in dev,
+  // which would otherwise enroll two separate TOTP factors on one page load.
+  const enrolled = useRef(false)
+
   useEffect(() => {
-    if (!user) return
+    if (!user || enrolled.current) return
+    enrolled.current = true
     enroll()
   }, [user])
 
   async function enroll() {
-    const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' })
+    // Clear out any unverified factor left over from an abandoned/refreshed
+    // enrollment attempt — Supabase rejects a new enroll() with a friendly-name
+    // collision otherwise, since unnamed factors all default to "".
+    const { data: existing } = await supabase.auth.mfa.listFactors()
+    const stale = existing?.all?.filter(f => f.factor_type === 'totp' && f.status === 'unverified') ?? []
+    for (const factor of stale) {
+      await supabase.auth.mfa.unenroll({ factorId: factor.id })
+    }
+
+    const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp', issuer: 'Prolix Health' })
     if (error || !data) { setError(error?.message ?? 'Enrollment failed'); setLoading(false); return }
     setFactorId(data.id)
     setQrCode(data.totp.qr_code)

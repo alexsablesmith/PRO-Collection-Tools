@@ -57,6 +57,53 @@ export default function UsersPage() {
     loadUsers()
   }
 
+  async function deleteUser(user: UserProfile) {
+    if (!confirm(`Permanently delete ${user.full_name || 'this user'}? This cannot be undone.`)) return
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/admin/delete-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token ?? ''}`,
+        },
+        body: JSON.stringify({ user_id: user.id }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        setInviteMsg({ type: 'error', text: json.error ?? 'Failed to delete user.' })
+        return
+      }
+      setInviteMsg({ type: 'success', text: `${user.full_name || 'User'} deleted.` })
+      loadUsers()
+    } catch {
+      setInviteMsg({ type: 'error', text: 'Network error. Please try again.' })
+    }
+  }
+
+  async function resetMfa(user: UserProfile) {
+    if (!confirm(`Reset two-factor authentication for ${user.full_name || 'this user'}? They will be required to re-enroll on next login.`)) return
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/admin/reset-mfa', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token ?? ''}`,
+        },
+        body: JSON.stringify({ user_id: user.id }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        setInviteMsg({ type: 'error', text: json.error ?? 'Failed to reset MFA.' })
+        return
+      }
+      setInviteMsg({ type: 'success', text: `2FA reset for ${user.full_name || 'user'}.` })
+    } catch {
+      setInviteMsg({ type: 'error', text: 'Network error. Please try again.' })
+    }
+  }
+
   async function sendInvite() {
     if (!inviteEmail.trim()) return
     setSending(true); setInviteMsg(null)
@@ -198,9 +245,17 @@ export default function UsersPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       {u.id !== profile?.id && u.role !== 'app_admin' && (
-                        <button onClick={() => toggleActive(u)} className="text-xs text-gray-500 hover:text-gray-700">
-                          {u.is_active ? 'Deactivate' : 'Activate'}
-                        </button>
+                        <div className="flex items-center justify-end gap-3">
+                          <button onClick={() => toggleActive(u)} className="text-xs text-gray-500 hover:text-gray-700">
+                            {u.is_active ? 'Deactivate' : 'Activate'}
+                          </button>
+                          <button onClick={() => resetMfa(u)} className="text-xs text-gray-500 hover:text-gray-700">
+                            Reset 2FA
+                          </button>
+                          <button onClick={() => deleteUser(u)} className="text-xs text-red-500 hover:text-red-700">
+                            Delete
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>
