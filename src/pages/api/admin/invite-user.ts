@@ -115,8 +115,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (!isResend) {
       // If this email already belongs to a user who has set up their account,
-      // refuse rather than silently reassigning their org/role.
-      if (existingProfile?.is_active || existingProfile?.invite_accepted_at) {
+      // refuse rather than silently reassigning their org/role. Only
+      // invite_accepted_at counts: a database trigger on auth.users creates an
+      // is_active=true profile the moment generateLink() creates a brand-new
+      // auth user, so is_active alone doesn't mean the account was ever used.
+      if (existingProfile?.invite_accepted_at) {
         let orgName = existingProfile.organization_id
         const { data: existingOrg } = await admin
           .from('organizations')

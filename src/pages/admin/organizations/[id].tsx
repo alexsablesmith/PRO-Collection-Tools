@@ -34,6 +34,8 @@ export default function OrganizationDetailPage() {
   const [allOrgs,  setAllOrgs]  = useState<Pick<Organization, 'id' | 'name' | 'status'>[]>([])
   const [flash,    setFlash]    = useState<FlashMessage>(null)
   const [loading,  setLoading]  = useState(true)
+  const [renaming, setRenaming] = useState(false)
+  const [newName,  setNewName]  = useState('')
 
   useEffect(() => {
     if (!id) return
@@ -56,6 +58,20 @@ export default function OrganizationDetailPage() {
     setLoading(false)
   }
 
+  async function rename() {
+    setFlash(null)
+    try {
+      const { organization } = await adminFetch<{ organization: Organization }>(
+        `/api/admin/organizations/${id}`, { method: 'PATCH', body: { name: newName } }
+      )
+      setOrg(organization)
+      setFlash({ type: 'success', text: `Renamed to ${organization.name}.` })
+      setRenaming(false)
+    } catch (e: any) {
+      setFlash({ type: 'error', text: e.message })
+    }
+  }
+
   function setTab(key: TabKey) {
     router.replace({ pathname: router.pathname, query: { id, tab: key } }, undefined, { shallow: true })
   }
@@ -76,7 +92,12 @@ export default function OrganizationDetailPage() {
           {isOwnOrg && <span className="text-purple-700">· Your organization</span>}
         </span>
       }
-      actions={<Link href="/admin" className="btn-secondary text-sm">← All organizations</Link>}
+      actions={
+        <>
+          <button onClick={() => { setNewName(org.name); setRenaming(true) }} className="btn-secondary text-sm">Rename</button>
+          <Link href="/admin" className="btn-secondary text-sm">← All organizations</Link>
+        </>
+      }
     >
       <Flash message={flash} onClose={() => setFlash(null)} />
 
@@ -107,9 +128,30 @@ export default function OrganizationDetailPage() {
       {tab === 'users'       && <OrgUsersPanel orgId={org.id} organizations={allOrgs} />}
       {tab === 'instruments' && <InstrumentsTab orgId={org.id} />}
       {tab === 'batteries'   && <BatteriesTab orgId={org.id} />}
-      {tab === 'settings'    && <SettingsTab org={org} onSaved={o => { setOrg(o); setFlash({ type: 'success', text: 'Settings saved.' }) }} onError={t => setFlash({ type: 'error', text: t })} />}
+      {tab === 'settings'    && <SettingsTab key={org.name} org={org} onSaved={o => { setOrg(o); setFlash({ type: 'success', text: 'Settings saved.' }) }} onError={t => setFlash({ type: 'error', text: t })} />}
       {tab === 'data'        && <DataTab org={org} isOwnOrg={isOwnOrg} stats={stats} onChanged={load} setFlash={setFlash} />}
       {tab === 'activity'    && <AuditLogTable orgId={org.id} />}
+
+      {renaming && (
+        <ConfirmDialog
+          title="Rename organization"
+          confirmLabel="Save name"
+          body={
+            <>
+              <input
+                className="input" value={newName} autoFocus
+                onChange={e => setNewName(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && newName.trim() && rename()}
+              />
+              <p className="text-xs text-gray-400">
+                Patients see the patient-facing name from Settings if one is set; otherwise they see this name.
+              </p>
+            </>
+          }
+          onCancel={() => setRenaming(false)}
+          onConfirm={rename}
+        />
+      )}
     </AdminShell>
   )
 }
